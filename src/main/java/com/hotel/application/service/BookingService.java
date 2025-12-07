@@ -17,7 +17,18 @@ public class BookingService implements BookingUseCase {
 
     @Override
     public Booking createBooking(Booking booking) {
-        // Có thể thêm logic tính tiền tự động ở đây
+        // 1. Kiểm tra phòng trống trước
+        boolean isAvailable = bookingRepositoryPort.isRoomAvailable(
+                booking.getRoomId(), 
+                booking.getCheckInDate(), 
+                booking.getCheckOutDate()
+        );
+
+        if (!isAvailable) {
+            throw new RuntimeException("Phòng đã có người đặt trong thời gian này!");
+        }
+
+        // 2. Nếu trống thì mới cho lưu
         booking.setStatus("CONFIRMED");
         return bookingRepositoryPort.save(booking);
     }

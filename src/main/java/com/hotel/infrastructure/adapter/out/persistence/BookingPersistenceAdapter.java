@@ -1,6 +1,7 @@
 package com.hotel.infrastructure.adapter.out.persistence;
 
 import com.hotel.application.port.out.BookingRepositoryPort;
+
 import com.hotel.domain.model.Booking;
 import com.hotel.infrastructure.adapter.out.persistence.entity.BookingJpaEntity;
 import com.hotel.infrastructure.adapter.out.persistence.entity.GuestJpaEntity;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.Optional;
+import java.time.LocalDate;
 @Component
 public class BookingPersistenceAdapter implements BookingRepositoryPort {
 
@@ -74,5 +76,11 @@ public class BookingPersistenceAdapter implements BookingRepositoryPort {
         return bookingRepo.findByGuestId(guestId).stream()
                 .map(this::mapToDomain)
                 .collect(Collectors.toList());
+    }
+ // Triển khai hàm kiểm tra
+    @Override
+    public boolean isRoomAvailable(Long roomId, LocalDate checkIn, LocalDate checkOut) {
+        List<BookingJpaEntity> overlaps = bookingRepo.findOverlappingBookings(roomId, checkIn, checkOut);
+        return overlaps.isEmpty(); // Nếu danh sách rỗng -> Phòng trống -> True
     }
 }

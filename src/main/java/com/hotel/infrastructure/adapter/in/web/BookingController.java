@@ -17,8 +17,18 @@ public class BookingController {
     }
 
     @PostMapping
-    public ResponseEntity<Booking> createBooking(@RequestBody Booking booking) {
-        return ResponseEntity.ok(bookingUseCase.createBooking(booking));
+    // Lưu ý: Đổi kiểu trả về thành ResponseEntity<?> để trả về được cả Booking (khi thành công) hoặc String (khi lỗi)
+    public ResponseEntity<?> createBooking(@RequestBody Booking booking) {
+        try {
+            // Cố gắng tạo đặt phòng
+            Booking newBooking = bookingUseCase.createBooking(booking);
+            return ResponseEntity.ok(newBooking);
+            
+        } catch (RuntimeException e) {
+            // Nếu bên Service "la lên" (throw Exception) là phòng trùng
+            // Thì Controller bắt lấy và trả về lỗi 400 kèm lời nhắn
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @GetMapping
