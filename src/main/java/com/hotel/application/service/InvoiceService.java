@@ -24,7 +24,10 @@ public class InvoiceService implements InvoiceUseCase {
         }
         return invoiceRepositoryPort.save(invoice);
     }
-
+    @Override
+    public Invoice getInvoiceById(Long id) {
+        return invoiceRepositoryPort.findById(id).orElse(null);
+    }
     @Override
     public List<Invoice> getAllInvoices() {
         return invoiceRepositoryPort.findAll();

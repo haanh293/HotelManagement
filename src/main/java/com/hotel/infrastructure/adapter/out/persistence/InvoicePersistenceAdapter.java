@@ -6,6 +6,7 @@ import com.hotel.infrastructure.adapter.out.persistence.entity.InvoiceJpaEntity;
 import com.hotel.infrastructure.adapter.out.persistence.repository.SpringDataInvoiceRepository;
 import org.springframework.stereotype.Component;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
@@ -36,7 +37,10 @@ public class InvoicePersistenceAdapter implements InvoiceRepositoryPort {
                 .map(this::mapToDomain)
                 .collect(Collectors.toList());
     }
-
+    @Override
+    public Optional<Invoice> findById(Long id) {
+        return repository.findById(id).map(this::mapToDomain);
+    }
     @Override
     public void deleteById(Long id) {
         repository.deleteById(id);

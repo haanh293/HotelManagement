@@ -14,7 +14,7 @@ public class RoomPersistenceAdapter implements RoomRepositoryPort {
 
     private final SpringDataRoomRepository springDataRoomRepository;
 
-    // --- CONSTRUCTOR THỦ CÔNG (SỬA LỖI 1) ---
+    // --- CONSTRUCTOR THỦ CÔNG  ---
     public RoomPersistenceAdapter(SpringDataRoomRepository springDataRoomRepository) {
         this.springDataRoomRepository = springDataRoomRepository;
     }
@@ -38,6 +38,7 @@ public class RoomPersistenceAdapter implements RoomRepositoryPort {
     public Optional<Room> findById(Long id) {
         return springDataRoomRepository.findById(id).map(this::mapToDomain);
     }
+    
 
     @Override
     public void deleteById(Long id) {
@@ -46,7 +47,6 @@ public class RoomPersistenceAdapter implements RoomRepositoryPort {
 
     private RoomJpaEntity mapToJpaEntity(Room room) {
         RoomJpaEntity entity = new RoomJpaEntity();
-        // Nếu room.getId() báo đỏ, là do file Room.java chưa có Getter/Setter (Xem bước 2)
         entity.setId(room.getId()); 
         entity.setName(room.getName());
         entity.setType(room.getType());

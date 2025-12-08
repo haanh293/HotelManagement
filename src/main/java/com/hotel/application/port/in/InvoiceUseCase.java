@@ -6,4 +6,5 @@ import java.util.List;
 public interface InvoiceUseCase {
     Invoice createInvoice(Invoice invoice);
     List<Invoice> getAllInvoices();
+    Invoice getInvoiceById(Long id);
 }
