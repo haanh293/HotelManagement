@@ -12,7 +12,6 @@ public class RoomController {
 
     private final RoomUseCase roomUseCase;
 
-    // --- CONSTRUCTOR THỦ CÔNG (SỬA LỖI NÀY LÀ XONG) ---
     public RoomController(RoomUseCase roomUseCase) {
         this.roomUseCase = roomUseCase;
     }
@@ -32,5 +31,14 @@ public class RoomController {
     public ResponseEntity<Void> deleteRoom(@PathVariable Long id) {
         roomUseCase.deleteRoom(id);
         return ResponseEntity.ok().build();
+    }
+    @GetMapping("/{id}")
+    public ResponseEntity<Room> getRoomById(@PathVariable Long id) {
+        Room room = roomUseCase.getRoomById(id);
+        if (room != null) {
+            return ResponseEntity.ok(room);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 }
