@@ -38,4 +38,42 @@ public class AuthController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> payload) {
+        try {
+            String msg = authUseCase.forgotPassword(payload.get("email"));
+            return ResponseEntity.ok(msg);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> payload) {
+        try {
+            authUseCase.resetPassword(
+                payload.get("email"), 
+                payload.get("token"), 
+                payload.get("newPassword")
+            );
+            return ResponseEntity.ok("Đổi mật khẩu thành công! Hãy đăng nhập lại.");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+    @PostMapping("/google-login")
+    public ResponseEntity<?> googleLogin(@RequestBody Map<String, String> payload) {
+        String credential = payload.get("credential");
+
+        if (credential == null) {
+            return ResponseEntity.badRequest().body("Thiếu Token Google!");
+        }
+
+        try {
+            User user = authUseCase.loginWithGoogle(credential);
+            return ResponseEntity.ok(user);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(401).body(e.getMessage());
+        }
+    }
 }
