@@ -71,7 +71,7 @@ public class AuthService implements AuthUseCase {
         // B2: Tạo mã Token ngẫu nhiên (4 số)
         String token = String.valueOf((int) (Math.random() * 9000) + 1000);
 
-        // B3: Lưu vào bộ nhớ tạm (để tí nữa đối chiếu)
+        // B3: Lưu vào bộ nhớ tạm
         tokenStore.put(email, token);
 
         // B4: Gửi Email thật
@@ -82,7 +82,7 @@ public class AuthService implements AuthUseCase {
         
         emailService.sendEmail(email, subject, body);
 
-        return "Mã xác nhận đã được gửi vào Email. Vui lòng kiểm tra!";
+        return token;
     }
 
     @Override
