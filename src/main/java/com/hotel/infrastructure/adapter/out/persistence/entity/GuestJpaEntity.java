@@ -12,6 +12,7 @@ public class GuestJpaEntity {
     private String phoneNumber;
     private String email;
     private String address;
+    @Column(name = "user_id")
     private Long userId;
     public GuestJpaEntity() {}
     public Long getUserId() { return userId; }
