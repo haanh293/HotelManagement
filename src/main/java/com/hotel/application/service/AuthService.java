@@ -1,151 +1,164 @@
 package com.hotel.application.service;
 
-import com.hotel.application.port.in.AuthUseCase;
-import com.hotel.domain.model.User;
-import com.hotel.infrastructure.adapter.out.external.EmailService;
-import com.hotel.infrastructure.adapter.out.persistence.entity.UserJpaEntity;
-import com.hotel.infrastructure.adapter.out.persistence.repository.SpringDataUserRepository;
-import org.springframework.stereotype.Service;
-import java.util.HashMap;
-import java.util.Map;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
+import com.hotel.application.port.in.AuthUseCase;
 import com.hotel.domain.model.User;
+import com.hotel.infrastructure.adapter.out.external.EmailService;
 import com.hotel.infrastructure.adapter.out.persistence.entity.GuestJpaEntity;
-import com.hotel.infrastructure.adapter.out.persistence.repository.SpringDataGuestRepository; 
-import java.util.Collections;
+import com.hotel.infrastructure.adapter.out.persistence.entity.UserJpaEntity;
+import com.hotel.infrastructure.adapter.out.persistence.repository.SpringDataGuestRepository;
+import com.hotel.infrastructure.adapter.out.persistence.repository.SpringDataUserRepository;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 @Service
-@Transactional
 public class AuthService implements AuthUseCase {
 
-	private static final Map<String, String> tokenStore = new HashMap<>();
+    // Kho lưu token quên mật khẩu tạm thời
+    private static final Map<String, String> tokenStore = new HashMap<>();
+    
+    // Client ID của Google (Đảm bảo khớp với Google Cloud Console)
+    private static final String GOOGLE_CLIENT_ID = "735228477144-oqnmhglsfd7hpm0ulv9sqopejc94eck3.apps.googleusercontent.com";
 
     private final SpringDataUserRepository userRepo;
-    private final EmailService emailService; // Service gửi mail đã tạo
+    private final EmailService emailService;
     private final SpringDataGuestRepository guestRepo;
+
     public AuthService(SpringDataUserRepository userRepo, 
-            			EmailService emailService,
-            			SpringDataGuestRepository guestRepo) { // <--- Thêm vào đây
-    	this.userRepo = userRepo;
-    	this.emailService = emailService;
-    	this.guestRepo = guestRepo; // <--- Gán giá trị
-}
-    private static final String GOOGLE_CLIENT_ID = "735228477144-oqnmhglsfd7hpm0ulv9sqopejc94eck3.apps.googleusercontent.com";
+                       EmailService emailService,
+                       SpringDataGuestRepository guestRepo) {
+        this.userRepo = userRepo;
+        this.emailService = emailService;
+        this.guestRepo = guestRepo;
+    }
+
+    // --- 1. ĐĂNG NHẬP THƯỜNG ---
     @Override
     public User login(String username, String password) {
-        // 1. Tìm user trong DB
         UserJpaEntity entity = userRepo.findByUsername(username).orElse(null);
-
-        // 2. Kiểm tra mật khẩu (So sánh chuỗi thường cho nhanh)
         if (entity != null && entity.getPassword().equals(password)) {
             return new User(entity.getId(), entity.getUsername(), entity.getPassword(), entity.getRole());
         }
-        
-        // 3. Đăng nhập thất bại
         return null; 
     }
+
+    // --- 2. ĐĂNG KÝ THƯỜNG (ĐÃ SỬA: Tạo cả User & Guest) ---
     @Override
+    @Transactional // Quan trọng: Đảm bảo lưu cả 2 bảng thành công
     public void register(User user) {
-        // 1. Kiểm tra xem tên đăng nhập đã tồn tại chưa
+        // B1. Kiểm tra trùng tên đăng nhập
         if (userRepo.findByUsername(user.getUsername()).isPresent()) {
-            throw new RuntimeException("Tên đăng nhập đã tồn tại!");
+            throw new RuntimeException("Tên đăng nhập (Email) đã tồn tại!");
         }
 
-        // 2. Chuyển đổi từ Domain sang Entity
+        // B2. Tạo User (Tài khoản)
         UserJpaEntity entity = new UserJpaEntity();
         entity.setUsername(user.getUsername());
         entity.setPassword(user.getPassword());
-        entity.setRole(user.getRole()); // Mặc định có thể để là "GUEST" hoặc lấy từ input
+        entity.setRole("GUEST"); 
 
-        // 3. Lưu vào DB
-        userRepo.save(entity);
+        // B3. Lưu User và HỨNG LẤY KẾT QUẢ để lấy ID
+        UserJpaEntity savedUser = userRepo.save(entity);
+
+        // B4. Tạo Guest (Hồ sơ) ngay lập tức
+        GuestJpaEntity newGuest = new GuestJpaEntity();
+        newGuest.setFullName(user.getUsername()); // Tạm lấy username làm tên
+        newGuest.setEmail(user.getUsername());
+        newGuest.setUserId(savedUser.getId());    // LIÊN KẾT KHÓA NGOẠI
+        newGuest.setPhoneNumber("");
+        newGuest.setAddress("");
+
+        // B5. Lưu Guest
+        guestRepo.save(newGuest);
     }
+
+    // --- 3. QUÊN MẬT KHẨU (Gửi Email + Trả về mã) ---
     @Override
     public String forgotPassword(String email) {
-        // B1: Kiểm tra email có tồn tại trong hệ thống không
         if (userRepo.findByUsername(email).isEmpty()) {
             throw new RuntimeException("Email này chưa đăng ký tài khoản!");
         }
 
-        // B2: Tạo mã Token ngẫu nhiên (4 số)
         String token = String.valueOf((int) (Math.random() * 9000) + 1000);
-
-        // B3: Lưu vào bộ nhớ tạm
         tokenStore.put(email, token);
 
-        // B4: Gửi Email thật
-        String subject = "Xác nhận Quên Mật Khẩu - Hotel Imperial";
-        String body = "Xin chào,\n\n" +
-                      "Mã xác nhận của bạn là: " + token + "\n" +
-                      "Mã này có hiệu lực trong 5 phút. Vui lòng không chia sẻ cho ai.";
-        
-        emailService.sendEmail(email, subject, body);
+        // Gửi Email thật
+        try {
+            String subject = "Xác nhận Quên Mật Khẩu - Hotel Imperial";
+            String body = "Mã xác nhận của bạn là: " + token + "\nMã có hiệu lực 5 phút.";
+            emailService.sendEmail(email, subject, body);
+        } catch (Exception e) {
+            System.err.println("Lỗi gửi mail: " + e.getMessage());
+        }
 
+        // Trả về token để tiện test (Frontend có thể dùng hoặc bỏ qua)
         return token;
     }
 
+    // --- 4. ĐẶT LẠI MẬT KHẨU ---
     @Override
     public void resetPassword(String email, String token, String newPassword) {
-        // B1: Lấy token đã lưu trong RAM ra
         String storedToken = tokenStore.get(email);
-
-        // B2: Kiểm tra khớp mã
         if (storedToken == null || !storedToken.equals(token)) {
             throw new RuntimeException("Mã xác nhận không đúng hoặc đã hết hạn!");
         }
 
-        // B3: Cập nhật mật khẩu mới vào DB
         UserJpaEntity user = userRepo.findByUsername(email).get();
-        user.setPassword(newPassword); // (Lưu ý: Nếu có mã hóa BCrypt thì nhớ mã hóa ở đây)
+        user.setPassword(newPassword);
         userRepo.save(user);
-
-        // B4: Xóa token đi (để không dùng lại được nữa)
         tokenStore.remove(email);
     }
+
+    // --- 5. ĐĂNG NHẬP GOOGLE (Đã bật xác thực thật) ---
     @Override
+    @Transactional
     public User loginWithGoogle(String credential) {
         try {
-            // 1. Cấu hình bộ xác thực của Google
+            // Cấu hình bộ xác thực Google
             GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), new GsonFactory())
                     .setAudience(Collections.singletonList(GOOGLE_CLIENT_ID))
                     .build();
 
-            // 2. Xác thực Token gửi từ Front-end
+            // Xác thực Token từ Frontend gửi lên
             GoogleIdToken idToken = verifier.verify(credential);
             
             if (idToken != null) {
-                // 3. Nếu Token xịn -> Lấy thông tin người dùng
                 GoogleIdToken.Payload payload = idToken.getPayload();
                 String email = payload.getEmail();
-                String name = (String) payload.get("name"); // Lấy tên nếu cần
+                String name = (String) payload.get("name");
 
-                // 4. Kiểm tra xem Email này đã có trong DB chưa
+                // B1: Xử lý User (Tài khoản)
                 UserJpaEntity userEntity = userRepo.findByUsername(email).orElse(null);
-
                 if (userEntity == null) {
                     userEntity = new UserJpaEntity();
                     userEntity.setUsername(email);
                     userEntity.setPassword("GOOGLE_LOGIN_AUTO");
                     userEntity.setRole("GUEST");
-                    userEntity = userRepo.save(userEntity); // Lưu User mới
-                }	
+                    userEntity = userRepo.save(userEntity);
+                }   
+                
+                // B2: Xử lý Guest (Hồ sơ) - Tìm theo UserID
                 GuestJpaEntity guestEntity = guestRepo.findByUserId(userEntity.getId()).orElse(null);
+                
                 if (guestEntity == null) {
-                    // Nếu chưa có Guest -> TẠO NGAY
                     guestEntity = new GuestJpaEntity();
                     guestEntity.setFullName(name);
                     guestEntity.setEmail(email);
-                    guestEntity.setUserId(userEntity.getId()); // Quan trọng: Link với User ID
+                    guestEntity.setUserId(userEntity.getId()); // Liên kết ID
                     guestEntity.setPhoneNumber("");
                     guestEntity.setAddress("");
                     
-                    guestRepo.save(guestEntity);
+                    guestRepo.saveAndFlush(guestEntity); // Lưu ngay lập tức
                 }
 
-                // 6. Trả về User đã đăng nhập
+                // B3: Trả về kết quả
                 return new User(userEntity.getId(), userEntity.getUsername(), userEntity.getPassword(), userEntity.getRole());
 
             } else {
