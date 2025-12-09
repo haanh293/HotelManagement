@@ -13,7 +13,6 @@ import java.util.Optional;
 @Repository
 public interface SpringDataBookingRepository extends JpaRepository<BookingJpaEntity, Long> {
 
-    // --- SỬA LẠI: Đổi 'b.room.id' thành 'b.roomId' ---
     @Query("SELECT b FROM BookingJpaEntity b WHERE b.roomId = :roomId " +
            "AND b.status <> 'CANCELLED' " +
            "AND ((b.checkInDate < :checkOutDate) AND (b.checkOutDate > :checkInDate))")
