@@ -12,7 +12,9 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
-import com.hotel.domain.model.User; // Domain model của bạn
+import com.hotel.domain.model.User;
+import com.hotel.infrastructure.adapter.out.persistence.entity.GuestJpaEntity;
+import com.hotel.infrastructure.adapter.out.persistence.repository.SpringDataGuestRepository; 
 import java.util.Collections;
 @Service
 public class AuthService implements AuthUseCase {
@@ -20,12 +22,15 @@ public class AuthService implements AuthUseCase {
 	private static final Map<String, String> tokenStore = new HashMap<>();
 
     private final SpringDataUserRepository userRepo;
-    private final EmailService emailService; // Service gửi mail bạn đã tạo
-
-    public AuthService(SpringDataUserRepository userRepo, EmailService emailService) {
-        this.userRepo = userRepo;
-        this.emailService = emailService;
-    }
+    private final EmailService emailService; // Service gửi mail đã tạo
+    private final SpringDataGuestRepository guestRepo;
+    public AuthService(SpringDataUserRepository userRepo, 
+            			EmailService emailService,
+            			SpringDataGuestRepository guestRepo) { // <--- Thêm vào đây
+    	this.userRepo = userRepo;
+    	this.emailService = emailService;
+    	this.guestRepo = guestRepo; // <--- Gán giá trị
+}
     private static final String GOOGLE_CLIENT_ID = "735228477144-oqnmhglsfd7hpm0ulv9sqopejc94eck3.apps.googleusercontent.com";
     @Override
     public User login(String username, String password) {
@@ -113,21 +118,30 @@ public class AuthService implements AuthUseCase {
                 // 3. Nếu Token xịn -> Lấy thông tin người dùng
                 GoogleIdToken.Payload payload = idToken.getPayload();
                 String email = payload.getEmail();
-                // String name = (String) payload.get("name"); // Lấy tên nếu cần
+                String name = (String) payload.get("name"); // Lấy tên nếu cần
 
                 // 4. Kiểm tra xem Email này đã có trong DB chưa
                 UserJpaEntity entity = userRepo.findByUsername(email).orElse(null);
 
                 if (entity == null) {
                     // 5. Nếu chưa có -> Tự động Đăng ký (Auto Register)
-                    entity = new UserJpaEntity();
+                    // account (user)
+                	entity = new UserJpaEntity();
                     entity.setUsername(email);
                     entity.setPassword("GOOGLE_LOGIN_Pass123"); // Mật khẩu ngẫu nhiên
                     entity.setRole("GUEST"); // Mặc định là khách
-                    entity = userRepo.save(entity);
+                    UserJpaEntity savedUser = userRepo.save(entity);
+                    // Tạo Hồ sơ khách (Guest)
+                    GuestJpaEntity newGuest = new GuestJpaEntity();
+                    newGuest.setFullName(name);      // Lấy tên từ Google
+                    newGuest.setEmail(email);        // Lấy email từ Google
+                    newGuest.setUserId(savedUser.getId()); // Liên kết với User vừa tạo
                     
-                    // Lưu ý: Đoạn này bạn nên gọi logic tạo Guest profile (thêm vào bảng guests) 
-                    // nhưng để đơn giản thì tạo User trước đã.
+                 // Các trường chưa có thì để trống hoặc null
+                    newGuest.setPhoneNumber(""); 
+                    newGuest.setAddress("");
+
+                    guestRepo.save(newGuest); // Lưu vào bảng guests
                 }
 
                 // 6. Trả về User đã đăng nhập
