@@ -16,7 +16,9 @@ import com.hotel.domain.model.User;
 import com.hotel.infrastructure.adapter.out.persistence.entity.GuestJpaEntity;
 import com.hotel.infrastructure.adapter.out.persistence.repository.SpringDataGuestRepository; 
 import java.util.Collections;
+import org.springframework.transaction.annotation.Transactional;
 @Service
+@Transactional
 public class AuthService implements AuthUseCase {
 
 	private static final Map<String, String> tokenStore = new HashMap<>();
@@ -121,31 +123,30 @@ public class AuthService implements AuthUseCase {
                 String name = (String) payload.get("name"); // Lấy tên nếu cần
 
                 // 4. Kiểm tra xem Email này đã có trong DB chưa
-                UserJpaEntity entity = userRepo.findByUsername(email).orElse(null);
+                UserJpaEntity userEntity = userRepo.findByUsername(email).orElse(null);
 
-                if (entity == null) {
-                    // 5. Nếu chưa có -> Tự động Đăng ký (Auto Register)
-                    // account (user)
-                	entity = new UserJpaEntity();
-                    entity.setUsername(email);
-                    entity.setPassword("GOOGLE_LOGIN_Pass123"); // Mật khẩu ngẫu nhiên
-                    entity.setRole("GUEST"); // Mặc định là khách
-                    UserJpaEntity savedUser = userRepo.save(entity);
-                    // Tạo Hồ sơ khách (Guest)
-                    GuestJpaEntity newGuest = new GuestJpaEntity();
-                    newGuest.setFullName(name);      // Lấy tên từ Google
-                    newGuest.setEmail(email);        // Lấy email từ Google
-                    newGuest.setUserId(savedUser.getId()); // Liên kết với User vừa tạo
+                if (userEntity == null) {
+                    userEntity = new UserJpaEntity();
+                    userEntity.setUsername(email);
+                    userEntity.setPassword("GOOGLE_LOGIN_AUTO");
+                    userEntity.setRole("GUEST");
+                    userEntity = userRepo.save(userEntity); // Lưu User mới
+                }	
+                GuestJpaEntity guestEntity = guestRepo.findByUserId(userEntity.getId()).orElse(null);
+                if (guestEntity == null) {
+                    // Nếu chưa có Guest -> TẠO NGAY
+                    guestEntity = new GuestJpaEntity();
+                    guestEntity.setFullName(name);
+                    guestEntity.setEmail(email);
+                    guestEntity.setUserId(userEntity.getId()); // Quan trọng: Link với User ID
+                    guestEntity.setPhoneNumber("");
+                    guestEntity.setAddress("");
                     
-                 // Các trường chưa có thì để trống hoặc null
-                    newGuest.setPhoneNumber(""); 
-                    newGuest.setAddress("");
-
-                    guestRepo.save(newGuest); // Lưu vào bảng guests
+                    guestRepo.save(guestEntity);
                 }
 
                 // 6. Trả về User đã đăng nhập
-                return new User(entity.getId(), entity.getUsername(), entity.getPassword(), entity.getRole());
+                return new User(userEntity.getId(), userEntity.getUsername(), userEntity.getPassword(), userEntity.getRole());
 
             } else {
                 throw new RuntimeException("Token Google không hợp lệ!");
