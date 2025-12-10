@@ -7,4 +7,5 @@ public interface GuestRepositoryPort {
     Guest save(Guest guest);
     List<Guest> findAll();
     Guest getGuestByUserId(Long userId);
+    java.util.Optional<Guest> findById(Long id);
 }

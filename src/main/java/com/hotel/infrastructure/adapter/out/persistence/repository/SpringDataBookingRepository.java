@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -22,7 +23,10 @@ public interface SpringDataBookingRepository extends JpaRepository<BookingJpaEnt
 
     List<BookingJpaEntity> findByGuestId(Long guestId);
     
-    // --- SỬA LẠI: Đổi 'b.room.id' thành 'b.roomId' ---
     @Query("SELECT b FROM BookingJpaEntity b WHERE b.roomId = :roomId AND b.status = 'CHECKED_IN'")
     Optional<BookingJpaEntity> findActiveBookingByRoom(@Param("roomId") Long roomId);
+    
+    @Query("SELECT SUM(b.totalAmount) FROM BookingJpaEntity b " +
+            "WHERE b.guestId = :guestId AND b.status IN ('CONFIRMED', 'CHECKED_IN', 'CHECKED_OUT', 'COMPLETED')")
+     BigDecimal calculateTotalSpending(@Param("guestId") Long guestId);
 }

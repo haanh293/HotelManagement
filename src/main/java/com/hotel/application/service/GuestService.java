@@ -6,10 +6,10 @@ import com.hotel.domain.model.Guest;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
-@Service
+@org.springframework.stereotype.Service
 public class GuestService implements GuestUseCase {
 
-    private final GuestRepositoryPort guestRepositoryPort;
+	private final com.hotel.application.port.out.GuestRepositoryPort guestRepositoryPort;
 
     public GuestService(GuestRepositoryPort guestRepositoryPort) {
         this.guestRepositoryPort = guestRepositoryPort;
@@ -28,5 +28,15 @@ public class GuestService implements GuestUseCase {
     public Guest getGuestByUserId(Long userId) {
         // Gọi xuống tầng dưới để tìm
         return guestRepositoryPort.getGuestByUserId(userId);
+    }
+    @Override
+    public Guest getGuestById(Long id) {
+        // Gọi xuống Adapter thông qua Port
+        return guestRepositoryPort.findById(id).orElse(null);
+    }
+    @Override
+    public Guest updateGuest(Guest guest) {
+        // Bản chất update cũng là save đè lên cái cũ
+        return guestRepositoryPort.save(guest);
     }
 }
