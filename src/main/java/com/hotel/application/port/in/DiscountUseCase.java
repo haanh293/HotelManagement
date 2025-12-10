@@ -7,4 +7,5 @@ public interface DiscountUseCase {
     Discount createDiscount(Discount discount);
     List<Discount> getAllDiscounts();
     void deleteDiscount(Long id);
+    Discount checkValidDiscount(String code, Long guestId);
 }

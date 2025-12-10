@@ -8,15 +8,18 @@ public class Discount {
     private Double value;         // Giá trị giảm (VD: 50000 hoặc 10%)
     private LocalDate startDate;  // Ngày bắt đầu
     private LocalDate endDate;    // Ngày kết thúc
-
+    private Long guestId; 
+    private Boolean isUsed;
     public Discount() {}
 
-    public Discount(Long id, String code, Double value, LocalDate startDate, LocalDate endDate) {
+    public Discount(Long id, String code, Double value, LocalDate startDate, LocalDate endDate, Long guestId, Boolean isUsed) {
         this.id = id;
         this.code = code;
         this.value = value;
         this.startDate = startDate;
         this.endDate = endDate;
+        this.guestId = guestId;
+        this.isUsed = isUsed;
     }
 
     // Getters & Setters
@@ -30,4 +33,8 @@ public class Discount {
     public void setStartDate(LocalDate startDate) { this.startDate = startDate; }
     public LocalDate getEndDate() { return endDate; }
     public void setEndDate(LocalDate endDate) { this.endDate = endDate; }
+    public Long getGuestId() { return guestId; }
+    public void setGuestId(Long guestId) { this.guestId = guestId; }
+    public Boolean getIsUsed() { return isUsed; }
+    public void setIsUsed(Boolean isUsed) { this.isUsed = isUsed; }
 }

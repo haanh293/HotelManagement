@@ -29,4 +29,12 @@ public class DiscountService implements DiscountUseCase {
     public void deleteDiscount(Long id) {
         discountRepositoryPort.deleteById(id);
     }
+
+    // --- LOGIC MỚI BẠN CẦN ---
+    @Override
+    public Discount checkValidDiscount(String code, Long guestId) {
+        // Gọi xuống Port để tìm mã phù hợp
+        return discountRepositoryPort.findValidDiscount(code, guestId)
+                .orElseThrow(() -> new RuntimeException("Mã giảm giá không hợp lệ, đã hết hạn hoặc không dành cho bạn!"));
+    }
 }
