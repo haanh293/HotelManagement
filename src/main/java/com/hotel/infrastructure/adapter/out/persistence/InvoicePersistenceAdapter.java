@@ -2,6 +2,7 @@ package com.hotel.infrastructure.adapter.out.persistence;
 
 import com.hotel.application.port.out.InvoiceRepositoryPort;
 import com.hotel.domain.model.Invoice;
+import com.hotel.domain.model.InvoiceStatus; // 1. Nhớ import Enum này
 import com.hotel.infrastructure.adapter.out.persistence.entity.InvoiceJpaEntity;
 import com.hotel.infrastructure.adapter.out.persistence.repository.SpringDataInvoiceRepository;
 import org.springframework.stereotype.Component;
@@ -26,6 +27,9 @@ public class InvoicePersistenceAdapter implements InvoiceRepositoryPort {
         entity.setTotalAmount(invoice.getTotalAmount());
         entity.setPaymentDate(invoice.getPaymentDate());
         entity.setPaymentMethod(invoice.getPaymentMethod());
+        
+        // 2. Thêm dòng này: Map status từ Domain -> Entity để lưu xuống DB
+        entity.setStatus(invoice.getStatus()); 
 
         InvoiceJpaEntity saved = repository.save(entity);
         return mapToDomain(saved);
@@ -37,16 +41,26 @@ public class InvoicePersistenceAdapter implements InvoiceRepositoryPort {
                 .map(this::mapToDomain)
                 .collect(Collectors.toList());
     }
+
     @Override
     public Optional<Invoice> findById(Long id) {
         return repository.findById(id).map(this::mapToDomain);
     }
+
     @Override
     public void deleteById(Long id) {
         repository.deleteById(id);
     }
 
+    // 3. Cập nhật hàm này: Map status từ Entity -> Domain
     private Invoice mapToDomain(InvoiceJpaEntity entity) {
-        return new Invoice(entity.getId(), entity.getBookingId(), entity.getTotalAmount(), entity.getPaymentDate(), entity.getPaymentMethod());
+        return new Invoice(
+            entity.getId(), 
+            entity.getBookingId(), 
+            entity.getTotalAmount(), 
+            entity.getPaymentDate(), 
+            entity.getPaymentMethod(),
+            entity.getStatus() // Thêm tham số status vào cuối
+        );
     }
 }

@@ -4,22 +4,33 @@ import java.time.LocalDate;
 
 public class Invoice {
     private Long id;
-    private Long bookingId;      // Mã đặt phòng
-    private Double totalAmount;  // Tổng tiền
-    private LocalDate paymentDate; // Ngày thanh toán
-    private String paymentMethod;  // Tiền mặt/Thẻ
+    private Long bookingId;
+    private Double totalAmount;
+    private LocalDate paymentDate;
+    private String paymentMethod;
+    // 1. Thêm trường status
+    private InvoiceStatus status; 
 
-    public Invoice() {}
+    public Invoice() {
+        // Mặc định khi khởi tạo mới là chưa thanh toán
+        this.status = InvoiceStatus.UNPAID; 
+    }
 
-    public Invoice(Long id, Long bookingId, Double totalAmount, LocalDate paymentDate, String paymentMethod) {
+    // Cập nhật Constructor
+    public Invoice(Long id, Long bookingId, Double totalAmount, LocalDate paymentDate, String paymentMethod, InvoiceStatus status) {
         this.id = id;
         this.bookingId = bookingId;
         this.totalAmount = totalAmount;
         this.paymentDate = paymentDate;
         this.paymentMethod = paymentMethod;
+        this.status = (status != null) ? status : InvoiceStatus.UNPAID;
     }
 
-    // Getters & Setters
+
+    // 2. Thêm Getter & Setter cho status
+    public InvoiceStatus getStatus() { return status; }
+    public void setStatus(InvoiceStatus status) { this.status = status; }
+    
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public Long getBookingId() { return bookingId; }

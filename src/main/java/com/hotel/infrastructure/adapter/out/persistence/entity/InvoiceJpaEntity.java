@@ -1,5 +1,6 @@
 package com.hotel.infrastructure.adapter.out.persistence.entity;
 
+import com.hotel.domain.model.InvoiceStatus; // Import Enum vừa tạo
 import jakarta.persistence.*;
 import java.time.LocalDate;
 
@@ -15,9 +16,21 @@ public class InvoiceJpaEntity {
     private LocalDate paymentDate;
     private String paymentMethod;
 
-    public InvoiceJpaEntity() {}
+    // 1. Thêm cấu hình mapping cho cột status
+    @Enumerated(EnumType.STRING) // Lưu chữ "PAID", "UNPAID" vào DB cho dễ đọc
+    @Column(nullable = false)    // Không cho phép null
+    private InvoiceStatus status;
 
-    // Getters & Setters
+    public InvoiceJpaEntity() {
+        // Mặc định DB
+        this.status = InvoiceStatus.UNPAID;
+    }
+
+    // 2. Thêm Getter & Setter cho status
+    public InvoiceStatus getStatus() { return status; }
+    public void setStatus(InvoiceStatus status) { this.status = status; }
+
+    // Các Getter/Setter cũ giữ nguyên...
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public Long getBookingId() { return bookingId; }
