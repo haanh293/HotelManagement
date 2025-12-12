@@ -5,5 +5,5 @@ import java.util.List;
 
 public interface ReviewUseCase {
     Review addReview(Review review);
-    List<Review> getReviewsByRoom(Long roomId);
+    List<Review> getReviewsByHotel(Long hotelId);
 }

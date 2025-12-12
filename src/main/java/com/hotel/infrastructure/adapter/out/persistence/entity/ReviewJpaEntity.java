@@ -9,8 +9,14 @@ public class ReviewJpaEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private Long guestId;
-    private Long roomId;
+    
+    // --- ĐỔI TỪ roomId SANG hotelId ---
+    @Column(name = "hotel_id") // Đặt tên cột rõ ràng trong DB
+    private Long hotelId; 
+    // ----------------------------------
+
     private Integer rating;
     private String comment;
     private LocalDate reviewDate;
@@ -20,14 +26,21 @@ public class ReviewJpaEntity {
     // Getters & Setters 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
+
     public Long getGuestId() { return guestId; }
     public void setGuestId(Long guestId) { this.guestId = guestId; }
-    public Long getRoomId() { return roomId; }
-    public void setRoomId(Long roomId) { this.roomId = roomId; }
+
+    // --- SỬA GETTER/SETTER ---
+    public Long getHotelId() { return hotelId; }
+    public void setHotelId(Long hotelId) { this.hotelId = hotelId; }
+    // -------------------------
+
     public Integer getRating() { return rating; }
     public void setRating(Integer rating) { this.rating = rating; }
+
     public String getComment() { return comment; }
     public void setComment(String comment) { this.comment = comment; }
+
     public LocalDate getReviewDate() { return reviewDate; }
     public void setReviewDate(LocalDate reviewDate) { this.reviewDate = reviewDate; }
 }

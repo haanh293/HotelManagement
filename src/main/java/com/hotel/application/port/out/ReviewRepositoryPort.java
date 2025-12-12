@@ -5,5 +5,5 @@ import java.util.List;
 
 public interface ReviewRepositoryPort {
     Review save(Review review);
-    List<Review> findByRoomId(Long roomId);
+    List<Review> findByHotelId(Long hotelId);
 }

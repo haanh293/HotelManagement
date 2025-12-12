@@ -6,5 +6,5 @@ import java.util.List;
 
 public interface SpringDataReviewRepository extends JpaRepository<ReviewJpaEntity, Long> {
     // Tìm các đánh giá của một phòng cụ thể
-    List<ReviewJpaEntity> findByRoomId(Long roomId);
+    List<ReviewJpaEntity> findByHotelId(Long hotelId);
 }

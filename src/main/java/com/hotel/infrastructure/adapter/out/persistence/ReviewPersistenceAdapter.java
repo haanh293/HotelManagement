@@ -19,21 +19,41 @@ public class ReviewPersistenceAdapter implements ReviewRepositoryPort {
     @Override
     public Review save(Review review) {
         ReviewJpaEntity entity = new ReviewJpaEntity();
+        
         entity.setId(review.getId());
         entity.setGuestId(review.getGuestId());
-        entity.setRoomId(review.getRoomId());
+        
+        // --- 1. SỬA ĐỔI: setHotelId thay vì setRoomId ---
+        entity.setHotelId(review.getHotelId()); 
+        // ------------------------------------------------
+        
         entity.setRating(review.getRating());
         entity.setComment(review.getComment());
         entity.setReviewDate(review.getReviewDate());
+        
         return mapToDomain(repo.save(entity));
     }
 
+    // --- 2. SỬA ĐỔI: Tìm theo HotelId ---
+    // Lưu ý: Bạn cần sửa tên hàm này trong interface ReviewRepositoryPort 
+    // và SpringDataReviewRepository tương ứng.
     @Override
-    public List<Review> findByRoomId(Long roomId) {
-        return repo.findByRoomId(roomId).stream().map(this::mapToDomain).collect(Collectors.toList());
+    public List<Review> findByHotelId(Long hotelId) {
+        return repo.findByHotelId(hotelId)
+                .stream()
+                .map(this::mapToDomain)
+                .collect(Collectors.toList());
     }
 
     private Review mapToDomain(ReviewJpaEntity e) {
-        return new Review(e.getId(), e.getGuestId(), e.getRoomId(), e.getRating(), e.getComment(), e.getReviewDate());
+        // --- 3. SỬA ĐỔI: Constructor nhận hotelId ---
+        return new Review(
+            e.getId(), 
+            e.getGuestId(), 
+            e.getHotelId(), // <-- Thay thế e.getRoomId()
+            e.getRating(), 
+            e.getComment(), 
+            e.getReviewDate()
+        );
     }
 }

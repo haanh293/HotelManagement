@@ -17,12 +17,12 @@ public class ReviewService implements ReviewUseCase {
 
     @Override
     public Review addReview(Review review) {
-        review.setReviewDate(LocalDate.now()); // Tự động lấy ngày hiện tại
+        review.setReviewDate(LocalDate.now()); 
         return port.save(review);
     }
 
     @Override
-    public List<Review> getReviewsByRoom(Long roomId) {
-        return port.findByRoomId(roomId);
+    public List<Review> getReviewsByHotel(Long hotelId) {
+        return port.findByHotelId(hotelId);
     }
 }

@@ -1,20 +1,23 @@
 package com.hotel.domain.model;
 
+import java.math.BigDecimal;
+
 public class Hotel {
     private Long id;
     private String name;        // Tên khách sạn (VD: Imperial Đà Lạt)
     private String city;        // Thành phố (Để tìm kiếm theo khu vực)
     private String address;     // Địa chỉ cụ thể
     private String description; // Mô tả chung
-
+    private BigDecimal basicPrice;
     public Hotel() {}
 
-    public Hotel(Long id, String name, String city, String address, String description) {
+    public Hotel(Long id, String name, String city, String address, String description, BigDecimal basicPrice) {
         this.id = id;
         this.name = name;
         this.city = city;
         this.address = address;
         this.description = description;
+        this.basicPrice = basicPrice;
     }
 
     // Getters & Setters
@@ -28,4 +31,6 @@ public class Hotel {
     public void setAddress(String address) { this.address = address; }
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+    public BigDecimal getBasicPrice() { return basicPrice; }
+    public void setBasicPrice(BigDecimal basicPrice) { this.basicPrice = basicPrice; }
 }

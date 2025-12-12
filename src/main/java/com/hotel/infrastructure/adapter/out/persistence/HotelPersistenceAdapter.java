@@ -37,16 +37,27 @@ public class HotelPersistenceAdapter implements HotelRepositoryPort {
     @Override
     public Hotel save(Hotel hotel) {
         HotelJpaEntity entity = new HotelJpaEntity();
+        
         entity.setId(hotel.getId());
         entity.setName(hotel.getName());
         entity.setCity(hotel.getCity());
         entity.setAddress(hotel.getAddress());
         entity.setDescription(hotel.getDescription());
+        
+        entity.setBasicPrice(hotel.getBasicPrice());
+
         return toDomain(hotelRepo.save(entity));
     }
 
     // Hàm chuyển đổi từ Entity sang Domain
     private Hotel toDomain(HotelJpaEntity e) {
-        return new Hotel(e.getId(), e.getName(), e.getCity(), e.getAddress(), e.getDescription());
+        return new Hotel(
+            e.getId(), 
+            e.getName(), 
+            e.getCity(), 
+            e.getAddress(), 
+            e.getDescription(),
+            e.getBasicPrice()
+        );
     }
 }

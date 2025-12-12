@@ -20,8 +20,9 @@ public class ReviewController {
         return ResponseEntity.ok(useCase.addReview(review));
     }
 
-    @GetMapping("/room/{roomId}")
-    public ResponseEntity<List<Review>> getReviewsByRoom(@PathVariable Long roomId) {
-        return ResponseEntity.ok(useCase.getReviewsByRoom(roomId));
+    @GetMapping("/hotel/{hotelId}") 
+    public ResponseEntity<List<Review>> getReviewsByHotel(@PathVariable Long hotelId) {
+        // 2. Gọi hàm mới trong Service
+        return ResponseEntity.ok(useCase.getReviewsByHotel(hotelId));
     }
 }

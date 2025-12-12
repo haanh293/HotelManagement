@@ -1,7 +1,7 @@
 package com.hotel.infrastructure.adapter.out.persistence.entity;
 
 import jakarta.persistence.*;
-
+import java.math.BigDecimal;
 @Entity
 @Table(name = "hotels")
 public class HotelJpaEntity {
@@ -15,7 +15,8 @@ public class HotelJpaEntity {
     
     @Column(length = 1000) // Cho phép mô tả dài hơn
     private String description;
-
+    @Column(name = "basic_price", precision = 19, scale = 2) 
+    private BigDecimal basicPrice;
     public HotelJpaEntity() {}
 
     // Getters & Setters
@@ -29,4 +30,6 @@ public class HotelJpaEntity {
     public void setAddress(String address) { this.address = address; }
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+    public BigDecimal getBasicPrice() { return basicPrice; }
+    public void setBasicPrice(BigDecimal basicPrice) { this.basicPrice = basicPrice; }
 }

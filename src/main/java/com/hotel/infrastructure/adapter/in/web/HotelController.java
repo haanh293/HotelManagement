@@ -16,7 +16,12 @@ public class HotelController {
         this.hotelUseCase = hotelUseCase;
     }
 
-    // API: Lấy tất cả hoặc Tìm theo thành phố (Ví dụ: /api/hotels?city=Đà Lạt)
+    // --- BỔ SUNG API TẠO KHÁCH SẠN (Để test lưu basicPrice) ---
+    @PostMapping
+    public ResponseEntity<Hotel> createHotel(@RequestBody Hotel hotel) {
+        return ResponseEntity.ok(hotelUseCase.createHotel(hotel));
+    }
+
     @GetMapping
     public ResponseEntity<List<Hotel>> getHotels(@RequestParam(required = false) String city) {
         if (city != null && !city.isEmpty()) {
@@ -25,7 +30,6 @@ public class HotelController {
         return ResponseEntity.ok(hotelUseCase.getAllHotels());
     }
 
-    // API: Xem chi tiết 1 khách sạn
     @GetMapping("/{id}")
     public ResponseEntity<Hotel> getHotelById(@PathVariable Long id) {
         Hotel hotel = hotelUseCase.getHotelById(id);
