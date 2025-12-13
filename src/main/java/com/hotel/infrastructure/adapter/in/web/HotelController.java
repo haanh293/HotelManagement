@@ -4,6 +4,7 @@ import com.hotel.application.port.in.HotelUseCase;
 import com.hotel.domain.model.Hotel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.hotel.application.dto.HotelDetailResponse;
 import java.util.List;
 
 @RestController
@@ -34,5 +35,9 @@ public class HotelController {
     public ResponseEntity<Hotel> getHotelById(@PathVariable Long id) {
         Hotel hotel = hotelUseCase.getHotelById(id);
         return (hotel != null) ? ResponseEntity.ok(hotel) : ResponseEntity.notFound().build();
+    }
+    @GetMapping("/{id}/details")
+    public ResponseEntity<HotelDetailResponse> getHotelDetails(@PathVariable Long id) {
+        return ResponseEntity.ok(hotelUseCase.getHotelWithReviews(id));
     }
 }
