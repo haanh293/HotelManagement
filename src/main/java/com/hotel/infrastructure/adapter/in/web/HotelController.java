@@ -24,10 +24,8 @@ public class HotelController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Hotel>> getHotels(@RequestParam(required = false) String city) {
-        if (city != null && !city.isEmpty()) {
-            return ResponseEntity.ok(hotelUseCase.searchHotelsByCity(city));
-        }
+    public ResponseEntity<List<HotelDetailResponse>> getAllHotels() {
+        // Hàm này giờ đây sẽ trả về danh sách Hotel kèm theo Review
         return ResponseEntity.ok(hotelUseCase.getAllHotels());
     }
 

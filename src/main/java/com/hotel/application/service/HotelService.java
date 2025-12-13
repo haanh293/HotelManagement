@@ -9,6 +9,9 @@ import org.springframework.stereotype.Service;
 import com.hotel.application.dto.HotelDetailResponse;
 import com.hotel.application.port.out.ReviewRepositoryPort;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class HotelService implements HotelUseCase {
@@ -21,8 +24,24 @@ public class HotelService implements HotelUseCase {
     }
 
     @Override
-    public List<Hotel> getAllHotels() {
-        return hotelPort.findAll();
+    public List<HotelDetailResponse> getAllHotels() {
+        // 1. Lấy danh sách tất cả Hotel
+        List<Hotel> hotels = hotelPort.findAll();
+
+        // 2. Lấy danh sách tất cả Review
+        List<Review> allReviews = reviewRepository.findAll();
+
+        // 3. Gom nhóm Review theo hotelId bằng Map
+        Map<Long, List<Review>> reviewsByHotelId = allReviews.stream()
+                .collect(Collectors.groupingBy(Review::getHotelId));
+
+        // 4. Map từng Hotel sang HotelDetailResponse
+        return hotels.stream()
+                .map(hotel -> {
+                    List<Review> reviews = reviewsByHotelId.getOrDefault(hotel.getId(), new ArrayList<>());
+                    return new HotelDetailResponse(hotel, reviews);
+                })
+                .collect(Collectors.toList());
     }
 
     @Override

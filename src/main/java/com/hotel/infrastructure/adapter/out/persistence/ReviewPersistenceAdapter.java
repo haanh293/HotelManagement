@@ -44,7 +44,13 @@ public class ReviewPersistenceAdapter implements ReviewRepositoryPort {
                 .map(this::mapToDomain)
                 .collect(Collectors.toList());
     }
-
+    @Override
+    public List<Review> findAll() {
+        return repo.findAll()             // 1. Gọi JpaRepository lấy hết Entity
+                .stream()                 // 2. Mở Stream để xử lý
+                .map(this::mapToDomain)   // 3. Chuyển từng Entity thành Domain
+                .collect(Collectors.toList()); // 4. Gom lại thành List
+    }
     private Review mapToDomain(ReviewJpaEntity e) {
         // --- 3. SỬA ĐỔI: Constructor nhận hotelId ---
         return new Review(

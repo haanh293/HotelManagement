@@ -5,7 +5,7 @@ import com.hotel.domain.model.Hotel;
 import java.util.List;
 
 public interface HotelUseCase {
-    List<Hotel> getAllHotels();
+    List<HotelDetailResponse> getAllHotels();
     List<Hotel> searchHotelsByCity(String city);
     Hotel getHotelById(Long id);
     Hotel createHotel(Hotel hotel);
