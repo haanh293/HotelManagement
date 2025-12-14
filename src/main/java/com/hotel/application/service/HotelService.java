@@ -45,8 +45,29 @@ public class HotelService implements HotelUseCase {
     }
 
     @Override
-    public List<Hotel> searchHotelsByCity(String city) {
-        return hotelPort.findByCity(city);
+    public List<HotelDetailResponse> searchHotelsByCity(String city) {
+        // 1. Tìm danh sách Hotel theo thành phố (Gọi Repository)
+        List<Hotel> hotels = hotelPort.findByCity(city);
+
+        // Nếu không tìm thấy khách sạn nào, trả về list rỗng ngay để tiết kiệm
+        if (hotels.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        // 2. Lấy tất cả Review để chuẩn bị ghép
+        List<Review> allReviews = reviewRepository.findAll();
+
+        // 3. Gom nhóm Review theo hotelId
+        Map<Long, List<Review>> reviewsByHotelId = allReviews.stream()
+                .collect(Collectors.groupingBy(Review::getHotelId));
+
+        // 4. Ghép Hotel với Review tương ứng
+        return hotels.stream()
+                .map(hotel -> {
+                    List<Review> reviews = reviewsByHotelId.getOrDefault(hotel.getId(), new ArrayList<>());
+                    return new HotelDetailResponse(hotel, reviews);
+                })
+                .collect(Collectors.toList());
     }
 
     @Override

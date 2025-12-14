@@ -27,9 +27,9 @@ public class HotelController {
         // Hàm này giờ đây sẽ trả về danh sách Hotel kèm theo Review
         return ResponseEntity.ok(hotelUseCase.getAllHotels());
     }
-    // URL: GET /api/hotels/search?city=Hanoi
+ // URL: GET /api/hotels/search?city=Hanoi
     @GetMapping("/search")
-    public ResponseEntity<List<Hotel>> searchHotels(@RequestParam String city) {
+    public ResponseEntity<List<HotelDetailResponse>> searchHotels(@RequestParam String city) {
         return ResponseEntity.ok(hotelUseCase.searchHotelsByCity(city));
     }
     @GetMapping("/{id}")
