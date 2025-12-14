@@ -58,7 +58,7 @@ public class HotelService implements HotelUseCase {
     public Hotel createHotel(Hotel hotel) {
         return hotelPort.save(hotel);
     }
-    @Override // Nhớ thêm hàm này vào Interface HotelUseCase nữa nhé!
+    @Override 
     public HotelDetailResponse getHotelWithReviews(Long hotelId) {
         // Lấy thông tin khách sạn
         Hotel hotel = hotelPort.findById(hotelId)

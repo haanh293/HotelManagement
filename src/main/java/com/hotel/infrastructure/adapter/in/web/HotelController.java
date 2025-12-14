@@ -17,7 +17,6 @@ public class HotelController {
         this.hotelUseCase = hotelUseCase;
     }
 
-    // --- BỔ SUNG API TẠO KHÁCH SẠN (Để test lưu basicPrice) ---
     @PostMapping
     public ResponseEntity<Hotel> createHotel(@RequestBody Hotel hotel) {
         return ResponseEntity.ok(hotelUseCase.createHotel(hotel));
@@ -28,7 +27,11 @@ public class HotelController {
         // Hàm này giờ đây sẽ trả về danh sách Hotel kèm theo Review
         return ResponseEntity.ok(hotelUseCase.getAllHotels());
     }
-
+    // URL: GET /api/hotels/search?city=Hanoi
+    @GetMapping("/search")
+    public ResponseEntity<List<Hotel>> searchHotels(@RequestParam String city) {
+        return ResponseEntity.ok(hotelUseCase.searchHotelsByCity(city));
+    }
     @GetMapping("/{id}")
     public ResponseEntity<Hotel> getHotelById(@PathVariable Long id) {
         Hotel hotel = hotelUseCase.getHotelById(id);
