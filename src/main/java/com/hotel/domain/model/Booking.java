@@ -7,28 +7,35 @@ public class Booking {
     private Long id;
     private Long guestId;
     private Long roomId;
+    private Long hotelId;
     private LocalDate checkInDate;
     private LocalDate checkOutDate;
     private BigDecimal totalAmount;
     private String status;
 
-    // --- CÁC TRƯỜNG MỚI BỔ SUNG ---
     private Integer adults;             // Số người lớn
     private Integer childrenUnder3;     // Trẻ em < 3 tuổi
     private Integer children3To5;       // Trẻ em 3-5 tuổi
     private Integer children6To12;      // Trẻ em 6-12 tuổi
-    private Integer preferredFloor;     // Tầng khách muốn (Optional)
 
+    private String roomType;    // Khách chọn loại phòng nào (Deluxe, Luxury...)
+    private String viewType;    // Khách muốn view gì
+    private String position;    // Khách muốn vị trí nào
+    private String lightType;   // Khách muốn ánh sáng gì
+    
     public Booking() {
     }
 
     // Constructor đầy đủ (Update thêm tham số mới vào)
-    public Booking(Long id, Long guestId, Long roomId, LocalDate checkInDate, LocalDate checkOutDate, 
+    public Booking(Long id, Long guestId, Long roomId, Long hotelId, LocalDate checkInDate, LocalDate checkOutDate, 
                    BigDecimal totalAmount, String status,
-                   Integer adults, Integer childrenUnder3, Integer children3To5, Integer children6To12, Integer preferredFloor) {
+                   Integer adults, Integer childrenUnder3, Integer children3To5, Integer children6To12, 
+                   String roomType, String viewType, String position, String lightType) {
+    	
         this.id = id;
         this.guestId = guestId;
         this.roomId = roomId;
+        this.hotelId = hotelId;
         this.checkInDate = checkInDate;
         this.checkOutDate = checkOutDate;
         this.totalAmount = totalAmount;
@@ -37,10 +44,13 @@ public class Booking {
         this.childrenUnder3 = childrenUnder3;
         this.children3To5 = children3To5;
         this.children6To12 = children6To12;
-        this.preferredFloor = preferredFloor;
+        this.roomType = roomType;
+        this.viewType = viewType;
+        this.position = position;
+        this.lightType = lightType;
     }
 
-    // --- GETTERS & SETTERS CŨ (Giữ nguyên) ---
+    
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public Long getGuestId() { return guestId; }
@@ -56,7 +66,7 @@ public class Booking {
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
 
-    // --- GETTERS & SETTERS MỚI ---
+    
     public Integer getAdults() { return adults; }
     public void setAdults(Integer adults) { this.adults = adults; }
     public Integer getChildrenUnder3() { return childrenUnder3; }
@@ -65,6 +75,17 @@ public class Booking {
     public void setChildren3To5(Integer children3To5) { this.children3To5 = children3To5; }
     public Integer getChildren6To12() { return children6To12; }
     public void setChildren6To12(Integer children6To12) { this.children6To12 = children6To12; }
-    public Integer getPreferredFloor() { return preferredFloor; }
-    public void setPreferredFloor(Integer preferredFloor) { this.preferredFloor = preferredFloor; }
+    
+    public String getRoomType() { return roomType; }
+    public void setRoomType(String roomType) { this.roomType = roomType; }
+    public String getViewType() { return viewType; }
+    public void setViewType(String viewType) { this.viewType = viewType; }
+    public String getPosition() { return position; }
+    public void setPosition(String position) { this.position = position; }
+    public String getLightType() { return lightType; }
+    public void setLightType(String lightType) { this.lightType = lightType; }
+    
+    public Long getHotelId() { return hotelId; }
+    public void setHotelId(Long hotelId) { this.hotelId = hotelId; }
+    
 }

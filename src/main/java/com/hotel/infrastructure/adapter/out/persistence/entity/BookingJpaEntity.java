@@ -13,13 +13,12 @@ public class BookingJpaEntity {
     private Long id;
 
     private Long guestId;
-    
-    // Nếu bạn dùng quan hệ object (ManyToOne) thì giữ nguyên, còn nếu dùng ID thì để Long
-    // Ở đây tôi để quan hệ Object như lúc nãy bạn báo lỗi để bạn dễ sửa lại nếu cần
-    // Nhưng để đơn giản và khớp với Domain, tôi dùng roomId (Long)
     @Column(name = "room_id")
     private Long roomId; 
-
+    
+    @Column(name = "hotel_id")
+    private Long hotelId;
+    
     private LocalDate checkInDate;
     private LocalDate checkOutDate;
     private BigDecimal totalAmount;
@@ -30,7 +29,18 @@ public class BookingJpaEntity {
     private Integer childrenUnder3;
     private Integer children3To5;
     private Integer children6To12;
-    private Integer preferredFloor;
+    
+    @Column(name = "room_type")
+    private String roomType;
+
+    @Column(name = "view_type")
+    private String viewType;
+
+    @Column(name = "position_type")
+    private String position;
+
+    @Column(name = "light_type")
+    private String lightType;
 
     public BookingJpaEntity() {
     }
@@ -51,7 +61,6 @@ public class BookingJpaEntity {
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
 
-    // Getter/Setter Mới
     public Integer getAdults() { return adults; }
     public void setAdults(Integer adults) { this.adults = adults; }
     public Integer getChildrenUnder3() { return childrenUnder3; }
@@ -60,6 +69,16 @@ public class BookingJpaEntity {
     public void setChildren3To5(Integer children3To5) { this.children3To5 = children3To5; }
     public Integer getChildren6To12() { return children6To12; }
     public void setChildren6To12(Integer children6To12) { this.children6To12 = children6To12; }
-    public Integer getPreferredFloor() { return preferredFloor; }
-    public void setPreferredFloor(Integer preferredFloor) { this.preferredFloor = preferredFloor; }
+    
+    public String getRoomType() { return roomType; }
+    public void setRoomType(String roomType) { this.roomType = roomType; }
+    public String getViewType() { return viewType; }
+    public void setViewType(String viewType) { this.viewType = viewType; }
+    public String getPosition() { return position; }
+    public void setPosition(String position) { this.position = position; }
+    public String getLightType() { return lightType; }
+    public void setLightType(String lightType) { this.lightType = lightType; }
+    
+    public Long getHotelId() { return hotelId; }
+    public void setHotelId(Long hotelId) { this.hotelId = hotelId; }
 }

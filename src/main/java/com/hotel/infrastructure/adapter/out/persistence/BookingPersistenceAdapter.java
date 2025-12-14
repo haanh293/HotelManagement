@@ -26,18 +26,22 @@ public class BookingPersistenceAdapter implements BookingRepositoryPort {
         // Map dữ liệu
         entity.setId(booking.getId());
         entity.setGuestId(booking.getGuestId());
-        entity.setRoomId(booking.getRoomId()); 
+        entity.setRoomId(booking.getRoomId());
+        entity.setHotelId(booking.getHotelId());
         entity.setCheckInDate(booking.getCheckInDate());
         entity.setCheckOutDate(booking.getCheckOutDate());
         entity.setTotalAmount(booking.getTotalAmount());
         entity.setStatus(booking.getStatus());
 
-        // Map dữ liệu mới (Người lớn, trẻ em...)
         entity.setAdults(booking.getAdults());
         entity.setChildrenUnder3(booking.getChildrenUnder3());
         entity.setChildren3To5(booking.getChildren3To5());
         entity.setChildren6To12(booking.getChildren6To12());
-        entity.setPreferredFloor(booking.getPreferredFloor());
+        
+        entity.setRoomType(booking.getRoomType());
+        entity.setViewType(booking.getViewType());
+        entity.setPosition(booking.getPosition());
+        entity.setLightType(booking.getLightType());
 
         BookingJpaEntity saved = bookingRepo.save(entity);
         return mapToDomain(saved);
@@ -79,6 +83,7 @@ public class BookingPersistenceAdapter implements BookingRepositoryPort {
                 entity.getId(),
                 entity.getGuestId(),
                 entity.getRoomId(),
+                entity.getHotelId(),
                 entity.getCheckInDate(),
                 entity.getCheckOutDate(),
                 entity.getTotalAmount(),
@@ -87,7 +92,10 @@ public class BookingPersistenceAdapter implements BookingRepositoryPort {
                 entity.getChildrenUnder3(),
                 entity.getChildren3To5(),
                 entity.getChildren6To12(),
-                entity.getPreferredFloor()
+                entity.getRoomType(),
+                entity.getViewType(),
+                entity.getPosition(),
+                entity.getLightType()
         );
     }
 }

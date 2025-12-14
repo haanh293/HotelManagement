@@ -2,7 +2,6 @@ package com.hotel.infrastructure.adapter.in.web;
 
 import com.hotel.application.port.in.RoomUseCase;
 import com.hotel.domain.model.Room;
-import com.hotel.infrastructure.adapter.out.persistence.entity.BookingJpaEntity;
 import com.hotel.infrastructure.adapter.out.persistence.entity.BookingServiceJpaEntity;
 import com.hotel.infrastructure.adapter.out.persistence.entity.RoomJpaEntity;
 import com.hotel.infrastructure.adapter.out.persistence.repository.SpringDataBookingRepository;
@@ -20,9 +19,8 @@ public class RoomController {
     private final RoomUseCase roomUseCase;
     private final SpringDataBookingRepository bookingRepo;
     private final SpringDataBookingServiceRepository bookingServiceRepo;
-    private final SpringDataRoomRepository roomRepoRaw; // <--- Biến mới để search
+    private final SpringDataRoomRepository roomRepoRaw;
 
-    // Cập nhật Constructor đầy đủ 4 biến
     public RoomController(RoomUseCase roomUseCase,
                           SpringDataBookingRepository bookingRepo,
                           SpringDataBookingServiceRepository bookingServiceRepo,
@@ -33,7 +31,7 @@ public class RoomController {
         this.roomRepoRaw = roomRepoRaw;
     }
 
-    // --- API CŨ ---
+    // --- API CŨ (Giữ nguyên) ---
     @GetMapping
     public ResponseEntity<List<Room>> getAllRooms() {
         return ResponseEntity.ok(roomUseCase.getAllRooms());
@@ -56,18 +54,16 @@ public class RoomController {
         return ResponseEntity.ok(services);
     }
 
-    // --- API MỚI: TÌM KIẾM PHÒNG NÂNG CAO ---
-    // URL ví dụ: /api/rooms/search?hotelId=1&viewType=LAKE&minFloor=3&maxFloor=6
+    // --- API TÌM KIẾM ĐÃ SỬA ---
+    // URL ví dụ mới: /api/rooms/search?hotelId=1&minFloor=3
     @GetMapping("/search")
     public ResponseEntity<List<RoomJpaEntity>> searchRooms(
             @RequestParam(required = false) Long hotelId,
-            @RequestParam(required = false) String viewType,
-            @RequestParam(required = false) String position,
-            @RequestParam(required = false) String lightType,
+            // Đã xóa viewType, position, lightType
             @RequestParam(required = false) Integer minFloor,
             @RequestParam(required = false) Integer maxFloor
     ) {
-        // Gọi thẳng xuống Repository để lấy dữ liệu lọc
-        return ResponseEntity.ok(roomRepoRaw.searchRooms(hotelId, viewType, position, lightType, minFloor, maxFloor));
+        // Chỉ truyền 3 tham số còn lại vào hàm
+        return ResponseEntity.ok(roomRepoRaw.searchRooms(hotelId, minFloor, maxFloor));
     }
 }

@@ -24,14 +24,6 @@ public class RoomJpaEntity {
     @Column(name = "floor_number") 
     private Integer floor;      // Lưu số tầng
 
-    @Column(name = "view_type")
-    private String viewType;    // Lưu: LAKE, MOUNTAIN...
-
-    @Column(name = "position_type")
-    private String position;    // Lưu: CORNER, NEAR_ELEVATOR...
-
-    @Column(name = "light_type")
-    private String lightType;   // Lưu: DAYLIGHT...
 
     public RoomJpaEntity() {
     }
@@ -55,10 +47,4 @@ public class RoomJpaEntity {
     public void setHotelId(Long hotelId) { this.hotelId = hotelId; }
     public Integer getFloor() { return floor; }
     public void setFloor(Integer floor) { this.floor = floor; }
-    public String getViewType() { return viewType; }
-    public void setViewType(String viewType) { this.viewType = viewType; }
-    public String getPosition() { return position; }
-    public void setPosition(String position) { this.position = position; }
-    public String getLightType() { return lightType; }
-    public void setLightType(String lightType) { this.lightType = lightType; }
 }

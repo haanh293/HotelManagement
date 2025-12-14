@@ -10,6 +10,5 @@ public interface BookingRepositoryPort {
     List<Booking> findAll();
     Optional<Booking> findById(Long id);
     List<Booking> findByGuestId(Long guestId);
- // Thêm dòng này
     boolean isRoomAvailable(Long roomId, LocalDate checkIn, LocalDate checkOut);
 }

@@ -15,9 +15,18 @@ public class BookingService implements BookingUseCase {
         this.bookingRepositoryPort = bookingRepositoryPort;
     }
 
-    @Override
     public Booking createBooking(Booking booking) {
-        // 1. Kiểm tra phòng trống trước
+        // --- 1. VALIDATION MỚI (Nên thêm) ---
+        // Đảm bảo khách đã chọn loại phòng
+        if (booking.getRoomType() == null || booking.getRoomType().isEmpty()) {
+            throw new RuntimeException("Vui lòng chọn loại phòng (roomType)!");
+        }
+        
+        // (Tùy chọn) Kiểm tra các trường khác nếu cần
+        // if (booking.getViewType() == null) ...
+        // ------------------------------------
+
+        // 2. Kiểm tra phòng trống
         boolean isAvailable = bookingRepositoryPort.isRoomAvailable(
                 booking.getRoomId(), 
                 booking.getCheckInDate(), 
@@ -28,7 +37,7 @@ public class BookingService implements BookingUseCase {
             throw new RuntimeException("Phòng đã có người đặt trong thời gian này!");
         }
 
-        // 2. Nếu trống thì mới cho lưu
+        // 3. Lưu
         booking.setStatus("CONFIRMED");
         return bookingRepositoryPort.save(booking);
     }

@@ -23,7 +23,7 @@ public class RoomPersistenceAdapter implements RoomRepositoryPort {
     public Room save(Room room) {
         RoomJpaEntity entity = new RoomJpaEntity();
         
-        // Map dữ liệu cũ
+        
         entity.setId(room.getId());
         entity.setName(room.getName());
         entity.setType(room.getType());
@@ -31,13 +31,10 @@ public class RoomPersistenceAdapter implements RoomRepositoryPort {
         entity.setStatus(room.getStatus());
         entity.setDescription(room.getDescription());
 
-        // --- MAP DỮ LIỆU MỚI (QUAN TRỌNG) ---
+        
         entity.setHotelId(room.getHotelId());
         entity.setFloor(room.getFloor());
-        entity.setViewType(room.getViewType());
-        entity.setPosition(room.getPosition());
-        entity.setLightType(room.getLightType());
-        // -------------------------------------
+        
 
         RoomJpaEntity savedEntity = roomRepository.save(entity);
         return mapToDomain(savedEntity);
@@ -70,10 +67,7 @@ public class RoomPersistenceAdapter implements RoomRepositoryPort {
                 entity.getDescription(),
                 // --- THÊM THAM SỐ MỚI VÀO CONSTRUCTOR ---
                 entity.getHotelId(),
-                entity.getFloor(),
-                entity.getViewType(),
-                entity.getPosition(),
-                entity.getLightType()
+                entity.getFloor()
         );
     }
 }

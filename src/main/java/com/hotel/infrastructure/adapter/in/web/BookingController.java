@@ -15,7 +15,7 @@ import java.util.List;
 public class BookingController {
 
     private final BookingUseCase bookingUseCase;
-    private final SpringDataBookingServiceRepository bookingServiceRepo; // <--- Biến mới
+    private final SpringDataBookingServiceRepository bookingServiceRepo;
 
     // Constructor nhận cả 2 biến (Để tránh lỗi null)
     public BookingController(BookingUseCase bookingUseCase, 

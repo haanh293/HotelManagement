@@ -10,20 +10,15 @@ import java.util.List;
 @Repository
 public interface SpringDataRoomRepository extends JpaRepository<RoomJpaEntity, Long> {
 
-    // --- CÂU QUERY LỌC NÂNG CAO ---
-    // Logic: Nếu tham số truyền vào là NULL thì bỏ qua điều kiện đó (coi như chọn tất cả)
+    // --- CÂU QUERY ĐÃ SỬA (Xóa các trường view, position, light) ---
     @Query("SELECT r FROM RoomJpaEntity r WHERE " +
            "(:hotelId IS NULL OR r.hotelId = :hotelId) AND " +
-           "(:viewType IS NULL OR r.viewType = :viewType) AND " +
-           "(:position IS NULL OR r.position = :position) AND " +
-           "(:lightType IS NULL OR r.lightType = :lightType) AND " +
            "(:minFloor IS NULL OR r.floor >= :minFloor) AND " +
            "(:maxFloor IS NULL OR r.floor <= :maxFloor) AND " +
            "(r.status = 'AVAILABLE')")
-    List<RoomJpaEntity> searchRooms(@Param("hotelId") Long hotelId,
-                                    @Param("viewType") String viewType,
-                                    @Param("position") String position,
-                                    @Param("lightType") String lightType,
-                                    @Param("minFloor") Integer minFloor,
-                                    @Param("maxFloor") Integer maxFloor);
+    List<RoomJpaEntity> searchRooms(
+           @Param("hotelId") Long hotelId,
+           @Param("minFloor") Integer minFloor,
+           @Param("maxFloor") Integer maxFloor
+    );
 }
