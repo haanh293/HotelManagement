@@ -49,7 +49,7 @@ public class AuthService implements AuthUseCase {
         return null; 
     }
 
-    // --- 2. ĐĂNG KÝ THƯỜNG (ĐÃ SỬA: Tạo cả User & Guest) ---
+    // --- 2. ĐĂNG KÝ THƯỜNG 
     @Override
     @Transactional // Quan trọng: Đảm bảo lưu cả 2 bảng thành công
     public void register(User user) {
@@ -167,5 +167,26 @@ public class AuthService implements AuthUseCase {
         } catch (Exception e) {
             throw new RuntimeException("Lỗi xác thực Google: " + e.getMessage());
         }
+    }
+    @Override
+    public void changePassword(Long userId, String oldPassword, String newPassword, String confirmPassword) {
+        // B1. Kiểm tra xác nhận mật khẩu
+        if (!newPassword.equals(confirmPassword)) {
+            throw new RuntimeException("Mật khẩu mới và xác nhận mật khẩu không khớp!");
+        }
+
+        // B2. Tìm người dùng trong DB
+        UserJpaEntity user = userRepo.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại!"));
+
+        // B3. Kiểm tra mật khẩu cũ (So sánh chuỗi thường)
+        // Lưu ý: Nếu sau này bạn dùng BCrypt, chỗ này phải dùng passwordEncoder.matches()
+        if (!user.getPassword().equals(oldPassword)) {
+            throw new RuntimeException("Mật khẩu hiện tại không đúng!");
+        }
+
+        // B4. Cập nhật và lưu
+        user.setPassword(newPassword);
+        userRepo.save(user);
     }
 }

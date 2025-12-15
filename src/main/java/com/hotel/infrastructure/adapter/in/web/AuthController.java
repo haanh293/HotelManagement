@@ -76,4 +76,28 @@ public class AuthController {
             return ResponseEntity.status(401).body(e.getMessage());
         }
     }
+ // URL: POST /api/auth/change-password
+    @PostMapping("/change-password")
+    public ResponseEntity<?> changePassword(@RequestBody Map<String, Object> payload) {
+        try {
+            // Lấy dữ liệu từ JSON (payload)
+            // payload.get trả về Object nên cần ép kiểu hoặc toString
+            Long userId = Long.valueOf(payload.get("userId").toString());
+            String oldPassword = (String) payload.get("oldPassword");
+            String newPassword = (String) payload.get("newPassword");
+            String confirmPassword = (String) payload.get("confirmPassword");
+
+            // Gọi Service xử lý
+            authUseCase.changePassword(userId, oldPassword, newPassword, confirmPassword);
+            
+            return ResponseEntity.ok("Đổi mật khẩu thành công!");
+            
+        } catch (NumberFormatException e) {
+            return ResponseEntity.badRequest().body("ID người dùng không hợp lệ!");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Dữ liệu gửi lên bị thiếu hoặc sai định dạng!");
+        }
+    }
 }
