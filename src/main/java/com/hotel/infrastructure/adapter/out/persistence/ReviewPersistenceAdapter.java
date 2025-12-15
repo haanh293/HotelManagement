@@ -15,7 +15,13 @@ public class ReviewPersistenceAdapter implements ReviewRepositoryPort {
     public ReviewPersistenceAdapter(SpringDataReviewRepository repo) {
         this.repo = repo;
     }
-
+    @Override
+    public List<Review> findByGuestId(Long guestId) {
+        return repo.findByGuestId(guestId)
+                .stream()
+                .map(this::mapToDomain)
+                .collect(Collectors.toList());
+    }
     @Override
     public Review save(Review review) {
         ReviewJpaEntity entity = new ReviewJpaEntity();

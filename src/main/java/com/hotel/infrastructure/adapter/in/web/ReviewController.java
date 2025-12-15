@@ -1,5 +1,6 @@
 package com.hotel.infrastructure.adapter.in.web;
 
+import com.hotel.application.dto.ReviewWithHotelResponse;
 import com.hotel.application.port.in.ReviewUseCase;
 import com.hotel.domain.model.Review;
 import org.springframework.http.ResponseEntity;
@@ -24,5 +25,9 @@ public class ReviewController {
     public ResponseEntity<List<Review>> getReviewsByHotel(@PathVariable Long hotelId) {
         // 2. Gọi hàm mới trong Service
         return ResponseEntity.ok(useCase.getReviewsByHotel(hotelId));
+    }
+    @GetMapping("/guest/{guestId}")
+    public ResponseEntity<List<ReviewWithHotelResponse>> getReviewsByGuest(@PathVariable Long guestId) {
+        return ResponseEntity.ok(useCase.getReviewsByGuest(guestId));
     }
 }

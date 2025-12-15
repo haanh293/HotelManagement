@@ -7,4 +7,5 @@ public interface ReviewRepositoryPort {
     Review save(Review review);
     List<Review> findByHotelId(Long hotelId);
 	List<Review> findAll();
+	List<Review> findByGuestId(Long guestId);
 }
