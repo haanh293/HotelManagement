@@ -19,13 +19,18 @@ public class DiscountJpaEntity {
     private LocalDate startDate;
     private LocalDate endDate;
 
-    // --- CÁC CỘT MỚI BỔ SUNG ---
 
     @Column(name = "guest_id")
     private Long guestId;       // Quan trọng: Nếu NULL -> Ai cũng dùng được. Nếu có ID -> Chỉ người đó dùng được.
 
     @Column(name = "is_used")
     private Boolean isUsed = false; // Đánh dấu đã dùng chưa (Mặc định là False)
+    
+    @Column(name = "quantity")
+    private Integer quantity;       // Lưu số lượng còn lại
+
+    @Column(name = "description")   // Lưu mô tả chi tiết
+    private String description;
 
     public DiscountJpaEntity() {}
 
@@ -51,4 +56,9 @@ public class DiscountJpaEntity {
 
     public Boolean getIsUsed() { return isUsed; }
     public void setIsUsed(Boolean isUsed) { this.isUsed = isUsed; }
+    
+    public Integer getQuantity() { return quantity; }
+    public void setQuantity(Integer quantity) { this.quantity = quantity; }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
 }

@@ -36,7 +36,9 @@ public class DiscountPersistenceAdapter implements DiscountRepositoryPort {
         entity.setGuestId(discount.getGuestId());
         entity.setIsUsed(discount.getIsUsed());
         
-
+        entity.setQuantity(discount.getQuantity());
+        entity.setDescription(discount.getDescription());
+        
         DiscountJpaEntity saved = repository.save(entity);
         return mapToDomain(saved);
     }
@@ -65,18 +67,17 @@ public class DiscountPersistenceAdapter implements DiscountRepositoryPort {
 
     // 5. CHUYỂN ĐỔI ENTITY -> DOMAIN
     private Discount mapToDomain(DiscountJpaEntity entity) {
-        Discount discount = new Discount();
-        
-        // Map dữ liệu từ DB sang Java Object
-        discount.setId(entity.getId());
-        discount.setCode(entity.getCode());
-        discount.setValue(entity.getValue());
-        discount.setStartDate(entity.getStartDate());
-        discount.setEndDate(entity.getEndDate());
-        
-        discount.setGuestId(entity.getGuestId());
-        discount.setIsUsed(entity.getIsUsed());
-        
-        return discount;
+        return new Discount(
+                entity.getId(),
+                entity.getCode(),
+                entity.getValue(),
+                entity.getStartDate(),
+                entity.getEndDate(),
+                entity.getGuestId(),
+                entity.getIsUsed(),
+                
+                entity.getQuantity(),
+                entity.getDescription()
+        );
     }
 }

@@ -31,4 +31,27 @@ public class DiscountController {
         discountUseCase.deleteDiscount(id);
         return ResponseEntity.ok().build();
     }
+    // Kiểm tra mã (Chỉ check, không trừ số lượng)
+    // URL: GET /api/discounts/check?code=SALE50&guestId=1
+    @GetMapping("/check")
+    public ResponseEntity<?> checkDiscount(@RequestParam String code, @RequestParam Long guestId) {
+        try {
+            return ResponseEntity.ok(discountUseCase.checkValidDiscount(code, guestId));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+    // ÁP DỤNG MÃ (SẼ TRỪ SỐ LƯỢNG) ---
+    // URL: POST /api/discounts/apply?code=SALE50&guestId=1
+    @PostMapping("/apply")
+    public ResponseEntity<?> applyDiscount(@RequestParam String code, @RequestParam Long guestId) {
+        try {
+            // Gọi hàm applyDiscount trong Service để trừ quantity
+            Discount discount = discountUseCase.applyDiscount(code, guestId);
+            return ResponseEntity.ok(discount);
+        } catch (RuntimeException e) {
+            // Trả về lỗi nếu mã hết hạn hoặc hết số lượng
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }

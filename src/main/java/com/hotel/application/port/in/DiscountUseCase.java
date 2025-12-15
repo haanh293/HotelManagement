@@ -8,4 +8,5 @@ public interface DiscountUseCase {
     List<Discount> getAllDiscounts();
     void deleteDiscount(Long id);
     Discount checkValidDiscount(String code, Long guestId);
+    Discount applyDiscount(String code, Long guestId);
 }
