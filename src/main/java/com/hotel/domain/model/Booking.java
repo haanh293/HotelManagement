@@ -23,6 +23,7 @@ public class Booking {
     private String position;    // Khách muốn vị trí nào
     private String lightType;   // Khách muốn ánh sáng gì
     
+    private String bookingCode;
     public Booking() {
     }
 
@@ -30,7 +31,7 @@ public class Booking {
     public Booking(Long id, Long guestId, Long roomId, Long hotelId, LocalDate checkInDate, LocalDate checkOutDate, 
                    BigDecimal totalAmount, String status,
                    Integer adults, Integer childrenUnder3, Integer children3To5, Integer children6To12, 
-                   String roomType, String viewType, String position, String lightType) {
+                   String roomType, String viewType, String position, String lightType, String bookingCode) {
     	
         this.id = id;
         this.guestId = guestId;
@@ -48,6 +49,7 @@ public class Booking {
         this.viewType = viewType;
         this.position = position;
         this.lightType = lightType;
+        this.bookingCode = bookingCode;
     }
 
     
@@ -88,4 +90,6 @@ public class Booking {
     public Long getHotelId() { return hotelId; }
     public void setHotelId(Long hotelId) { this.hotelId = hotelId; }
     
+    public String getBookingCode() { return bookingCode; }
+    public void setBookingCode(String bookingCode) { this.bookingCode = bookingCode; }
 }

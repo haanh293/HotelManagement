@@ -42,6 +42,8 @@ public class BookingPersistenceAdapter implements BookingRepositoryPort {
         entity.setViewType(booking.getViewType());
         entity.setPosition(booking.getPosition());
         entity.setLightType(booking.getLightType());
+        
+        entity.setBookingCode(booking.getBookingCode());
 
         BookingJpaEntity saved = bookingRepo.save(entity);
         return mapToDomain(saved);
@@ -95,7 +97,8 @@ public class BookingPersistenceAdapter implements BookingRepositoryPort {
                 entity.getRoomType(),
                 entity.getViewType(),
                 entity.getPosition(),
-                entity.getLightType()
+                entity.getLightType(),
+                entity.getBookingCode()
         );
     }
 }

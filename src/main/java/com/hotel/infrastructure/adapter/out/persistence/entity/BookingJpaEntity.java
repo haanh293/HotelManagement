@@ -24,7 +24,6 @@ public class BookingJpaEntity {
     private BigDecimal totalAmount;
     private String status;
 
-    // --- CÁC CỘT MỚI ---
     private Integer adults;
     private Integer childrenUnder3;
     private Integer children3To5;
@@ -41,7 +40,10 @@ public class BookingJpaEntity {
 
     @Column(name = "light_type")
     private String lightType;
-
+    
+    @Column(name = "booking_code", unique = true)
+    private String bookingCode;
+    
     public BookingJpaEntity() {
     }
 
@@ -81,4 +83,7 @@ public class BookingJpaEntity {
     
     public Long getHotelId() { return hotelId; }
     public void setHotelId(Long hotelId) { this.hotelId = hotelId; }
+    
+    public String getBookingCode() { return bookingCode; }
+    public void setBookingCode(String bookingCode) { this.bookingCode = bookingCode; }
 }
