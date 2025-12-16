@@ -52,4 +52,16 @@ public class InvoiceService implements InvoiceUseCase {
         // 3. Lưu lại xuống DB (Adapter sẽ xử lý việc update dựa trên ID)
         return invoiceRepositoryPort.save(existingInvoice);
     }
+    @Override
+    public void cancelInvoiceByBookingId(Long bookingId) {
+        // 1. Tìm hóa đơn dựa trên Booking ID
+        Invoice invoice = invoiceRepositoryPort.findByBookingId(bookingId)
+                .orElse(null); // Nếu không có thì thôi, không báo lỗi
+
+        // 2. Nếu tìm thấy thì đổi trạng thái sang CANCELLED
+        if (invoice != null) {
+            // Chỉ hủy nếu hóa đơn chưa thanh toán hoặc đang chờ
+            invoiceRepositoryPort.save(invoice);
+        }
+    }
 }

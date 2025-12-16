@@ -9,4 +9,5 @@ public interface InvoiceRepositoryPort {
     List<Invoice> findAll();
     void deleteById(Long id);
     Optional<Invoice> findById(Long id);
+    Optional<Invoice> findByBookingId(Long bookingId);
 }

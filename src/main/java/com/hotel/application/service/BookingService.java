@@ -11,7 +11,9 @@ import com.hotel.infrastructure.adapter.out.external.EmailService; // Import Ser
 import com.hotel.infrastructure.adapter.out.persistence.entity.GuestJpaEntity;
 import com.hotel.infrastructure.adapter.out.persistence.repository.SpringDataGuestRepository; // Import Repo Guest
 import org.springframework.transaction.annotation.Transactional;
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 
@@ -98,14 +100,79 @@ public class BookingService implements BookingUseCase {
         return bookingRepositoryPort.findAll();
     }
     @Override
+    @Transactional
     public void cancelBooking(Long id) {
-        // 1. Tìm đặt phòng theo ID
-        Booking booking = bookingRepositoryPort.findById(id).orElse(null);
+        // 1. Tìm đơn đặt phòng
+        Booking booking = bookingRepositoryPort.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn đặt phòng!"));
+
+        // Kiểm tra nếu đã hủy rồi thì thôi
+        if ("CANCELLED".equals(booking.getStatus())) {
+            throw new RuntimeException("Đơn đặt phòng này đã bị hủy trước đó!");
+        }
+
+        // 2. Tính số ngày từ Hiện tại đến Check-in
+        LocalDate today = LocalDate.now();
+        LocalDate checkInDate = booking.getCheckInDate();
         
-        // 2. Nếu tìm thấy thì đổi trạng thái
-        if (booking != null) {
-            booking.setStatus("CANCELLED");
-            bookingRepositoryPort.save(booking);
+        // ChronoUnit.DAYS.between(start, end) trả về số ngày
+        long daysUntilCheckIn = ChronoUnit.DAYS.between(today, checkInDate);
+
+        // 3. Logic Hoàn tiền
+        int refundPercent = 0;
+        if (daysUntilCheckIn >= 7) {
+            refundPercent = 100;
+        } else if (daysUntilCheckIn >= 3) {
+            refundPercent = 50;
+        } else {
+            refundPercent = 0;
+        }
+
+        // Tính số tiền hoàn lại (Dùng BigDecimal để tính toán tiền tệ)
+        BigDecimal totalAmount = booking.getTotalAmount();
+        BigDecimal refundAmount = totalAmount
+                .multiply(BigDecimal.valueOf(refundPercent))
+                .divide(BigDecimal.valueOf(100));
+
+        // 4. Cập nhật trạng thái Booking
+        booking.setStatus("CANCELLED");
+        bookingRepositoryPort.save(booking);
+        invoiceUseCase.cancelInvoiceByBookingId(id);
+        // 5. Gửi Email thông báo
+        try {
+            GuestJpaEntity guest = guestRepo.findById(booking.getGuestId())
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin khách hàng"));
+
+            String emailSubject = "Xác nhận Hủy phòng & Thông tin hoàn tiền - Mã: " + booking.getBookingCode();
+            
+            StringBuilder body = new StringBuilder();
+            body.append("Xin chào ").append(guest.getFullName()).append(",\n\n");
+            body.append("Chúng tôi xác nhận đơn đặt phòng ").append(booking.getBookingCode()).append(" của bạn đã được HỦY thành công.\n\n");
+            body.append("--- CHI TIẾT HOÀN TIỀN ---\n");
+            body.append("- Ngày hủy: ").append(today).append("\n");
+            body.append("- Ngày Check-in dự kiến: ").append(checkInDate).append("\n");
+            body.append("- Thời gian hủy trước: ").append(daysUntilCheckIn).append(" ngày.\n");
+            
+            if (daysUntilCheckIn < 0) {
+                 body.append("- Lưu ý: Bạn đang hủy sau ngày check-in.\n");
+            }
+
+            body.append("- Chính sách áp dụng: ");
+            if (refundPercent == 100) body.append("Hoàn 100% (Hủy trước >= 7 ngày)\n");
+            else if (refundPercent == 50) body.append("Hoàn 50% (Hủy trước 3-6 ngày)\n");
+            else body.append("Không hoàn tiền (Hủy trước < 3 ngày)\n");
+
+            body.append("- Tổng tiền đơn hàng: ").append(String.format("%,.0f", totalAmount)).append(" VND\n");
+            body.append("- SỐ TIỀN HOÀN LẠI: ").append(String.format("%,.0f", refundAmount)).append(" VND\n\n");
+            
+            body.append("Số tiền sẽ được hoàn về phương thức thanh toán ban đầu của bạn trong vòng 5-7 ngày làm việc.\n");
+            body.append("Cảm ơn bạn đã quan tâm đến Hotel Imperial. Rất mong được phục vụ bạn trong tương lai!\n");
+
+            emailService.sendEmail(guest.getEmail(), emailSubject, body.toString());
+
+        } catch (Exception e) {
+            System.err.println("Lỗi gửi email hủy phòng: " + e.getMessage());
+            // Không throw exception để đảm bảo việc hủy phòng vẫn diễn ra thành công dù lỗi mail
         }
     }
     @Override

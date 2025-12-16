@@ -51,6 +51,11 @@ public class InvoicePersistenceAdapter implements InvoiceRepositoryPort {
     public void deleteById(Long id) {
         repository.deleteById(id);
     }
+    @Override
+    public Optional<Invoice> findByBookingId(Long bookingId) {
+        return repository.findByBookingId(bookingId)
+                .map(this::mapToDomain);
+    }
 
     // 3. Cập nhật hàm này: Map status từ Entity -> Domain
     private Invoice mapToDomain(InvoiceJpaEntity entity) {

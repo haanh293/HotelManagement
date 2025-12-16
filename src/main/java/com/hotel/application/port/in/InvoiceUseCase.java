@@ -9,4 +9,5 @@ public interface InvoiceUseCase {
     List<Invoice> getAllInvoices();
     Invoice getInvoiceById(Long id);
     Invoice updateInvoiceStatus(Long id, InvoiceStatus status);
+    void cancelInvoiceByBookingId(Long bookingId);
 }

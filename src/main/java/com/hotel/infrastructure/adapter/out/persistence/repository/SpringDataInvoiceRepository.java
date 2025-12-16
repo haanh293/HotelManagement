@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface SpringDataInvoiceRepository extends JpaRepository<InvoiceJpaEntity, Long> {
@@ -16,4 +17,5 @@ public interface SpringDataInvoiceRepository extends JpaRepository<InvoiceJpaEnt
            "GROUP BY YEAR(i.paymentDate), MONTH(i.paymentDate) " +
            "ORDER BY YEAR(i.paymentDate), MONTH(i.paymentDate)")
     List<MonthlyRevenue> getMonthlyRevenue();
+    Optional<InvoiceJpaEntity> findByBookingId(Long bookingId);
 }
