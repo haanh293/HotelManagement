@@ -7,8 +7,10 @@ import com.google.api.client.json.gson.GsonFactory;
 import com.hotel.application.port.in.AuthUseCase;
 import com.hotel.domain.model.User;
 import com.hotel.infrastructure.adapter.out.external.EmailService;
+import com.hotel.infrastructure.adapter.out.persistence.entity.EmployeeJpaEntity;
 import com.hotel.infrastructure.adapter.out.persistence.entity.GuestJpaEntity;
 import com.hotel.infrastructure.adapter.out.persistence.entity.UserJpaEntity;
+import com.hotel.infrastructure.adapter.out.persistence.repository.SpringDataEmployeeRepository;
 import com.hotel.infrastructure.adapter.out.persistence.repository.SpringDataGuestRepository;
 import com.hotel.infrastructure.adapter.out.persistence.repository.SpringDataUserRepository;
 import org.springframework.stereotype.Service;
@@ -30,13 +32,16 @@ public class AuthService implements AuthUseCase {
     private final SpringDataUserRepository userRepo;
     private final EmailService emailService;
     private final SpringDataGuestRepository guestRepo;
+    private final SpringDataEmployeeRepository employeeRepo;
 
     public AuthService(SpringDataUserRepository userRepo, 
                        EmailService emailService,
-                       SpringDataGuestRepository guestRepo) {
+                       SpringDataGuestRepository guestRepo, 
+                       SpringDataEmployeeRepository employeeRepo) {
         this.userRepo = userRepo;
         this.emailService = emailService;
         this.guestRepo = guestRepo;
+        this.employeeRepo = employeeRepo;
     }
 
     // --- 1. ĐĂNG NHẬP THƯỜNG ---
@@ -51,7 +56,7 @@ public class AuthService implements AuthUseCase {
 
     // --- 2. ĐĂNG KÝ THƯỜNG 
     @Override
-    @Transactional // Quan trọng: Đảm bảo lưu cả 2 bảng thành công
+    @Transactional 
     public void register(User user) {
         // B1. Kiểm tra trùng tên đăng nhập
         if (userRepo.findByUsername(user.getUsername()).isPresent()) {
@@ -62,21 +67,39 @@ public class AuthService implements AuthUseCase {
         UserJpaEntity entity = new UserJpaEntity();
         entity.setUsername(user.getUsername());
         entity.setPassword(user.getPassword());
-        entity.setRole("GUEST"); 
+        
+        //Lấy Role từ input, nếu không có thì mặc định là GUEST ---
+        String role = (user.getRole() != null && !user.getRole().isEmpty()) ? user.getRole().toUpperCase() : "GUEST";
+        entity.setRole(role); 
 
-        // B3. Lưu User và HỨNG LẤY KẾT QUẢ để lấy ID
+        // B3. Lưu User
         UserJpaEntity savedUser = userRepo.save(entity);
 
-        // B4. Tạo Guest (Hồ sơ) ngay lập tức
-        GuestJpaEntity newGuest = new GuestJpaEntity();
-        newGuest.setFullName(user.getUsername()); // Tạm lấy username làm tên
-        newGuest.setEmail(user.getUsername());
-        newGuest.setUserId(savedUser.getId());    // LIÊN KẾT KHÓA NGOẠI
-        newGuest.setPhoneNumber("");
-        newGuest.setAddress("");
-
-        // B5. Lưu Guest
-        guestRepo.save(newGuest);
+        // B4. PHÂN LOẠI ĐỂ TẠO HỒ SƠ (PROFILE)
+        if ("STAFF".equals(role)) {
+            // --- TẠO EMPLOYEE ---
+            EmployeeJpaEntity newEmployee = new EmployeeJpaEntity();
+            newEmployee.setUserId(savedUser.getId()); // Liên kết khóa ngoại
+            
+            // Set giá trị mặc định (Vì lúc đăng ký chưa có thông tin chi tiết)
+            newEmployee.setFullName(user.getUsername()); 
+            newEmployee.setPosition("Nhân viên mới"); // Mặc định
+            newEmployee.setSalary(0.0);               // Mặc định
+            newEmployee.setPhoneNumber("");
+            
+            employeeRepo.save(newEmployee);
+            
+        } else {
+            // --- TẠO GUEST (Mặc định cho GUEST hoặc role khác) ---
+            GuestJpaEntity newGuest = new GuestJpaEntity();
+            newGuest.setUserId(savedUser.getId());    // Liên kết khóa ngoại
+            newGuest.setFullName(user.getUsername()); 
+            newGuest.setEmail(user.getUsername());
+            newGuest.setPhoneNumber("");
+            newGuest.setAddress("");
+            
+            guestRepo.save(newGuest);
+        }
     }
 
     // --- 3. QUÊN MẬT KHẨU (Gửi Email + Trả về mã) ---
