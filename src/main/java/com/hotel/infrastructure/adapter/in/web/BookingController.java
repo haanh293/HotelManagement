@@ -85,4 +85,13 @@ public class BookingController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<?> updateBookingStatus(@PathVariable Long id, @RequestParam String status) {
+        try {
+            Booking updatedBooking = bookingUseCase.updateBookingStatus(id, status);
+            return ResponseEntity.ok(updatedBooking);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }

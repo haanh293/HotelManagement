@@ -8,7 +8,11 @@ import com.hotel.infrastructure.adapter.out.external.EmailService; // Import Ser
 import com.hotel.infrastructure.adapter.out.persistence.entity.GuestJpaEntity;
 import com.hotel.infrastructure.adapter.out.persistence.repository.SpringDataGuestRepository; // Import Repo Guest
 import org.springframework.transaction.annotation.Transactional;
+
+
 import java.math.BigDecimal;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -20,6 +24,12 @@ public class BookingService implements BookingUseCase {
     private final BookingRepositoryPort bookingRepositoryPort;
     private final EmailService emailService;             
     private final SpringDataGuestRepository guestRepo;
+    
+ // Thông tin ngân hàng của bạn (Hard-code)
+    private static final String BANK_ID = "vietinbank";
+    private static final String ACCOUNT_NO = "108878399150";
+    private static final String ACCOUNT_NAME = "NGUYEN HA ANH";
+    private static final String TEMPLATE = "compact"; // Giao diện QR gọn gàng
     public BookingService(BookingRepositoryPort bookingRepositoryPort, EmailService emailService, SpringDataGuestRepository guestRepo) {
         this.bookingRepositoryPort = bookingRepositoryPort;
         this.emailService = emailService;
@@ -28,19 +38,15 @@ public class BookingService implements BookingUseCase {
     @Override
     @Transactional
     public Booking createBooking(Booking booking) {
-        // Đảm bảo khách đã chọn loại phòng
+        // 1. Validation
         if (booking.getRoomType() == null || booking.getRoomType().isEmpty()) {
             throw new RuntimeException("Vui lòng chọn loại phòng (roomType)!");
         }
-        
-        // (Tùy chọn) Kiểm tra các trường khác nếu cần
-        // if (booking.getViewType() == null) ...
-        // ------------------------------------
 
-        // 2. Kiểm tra phòng trống
+        // 2. Check phòng trống
         boolean isAvailable = bookingRepositoryPort.isRoomAvailable(
-                booking.getRoomId(), 
-                booking.getCheckInDate(), 
+                booking.getRoomId(),
+                booking.getCheckInDate(),
                 booking.getCheckOutDate()
         );
 
@@ -48,25 +54,48 @@ public class BookingService implements BookingUseCase {
             throw new RuntimeException("Phòng đã có người đặt trong thời gian này!");
         }
 
-        // 3. Lưu
+        // 3. Tạo mã và Lưu
         String randomCode = "BK-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
         booking.setBookingCode(randomCode);
-        
-        booking.setStatus("CONFIRMED");
+        booking.setStatus("CONFIRMED"); // Mặc định là Đã xác nhận (nhưng chưa thanh toán)
+
         Booking savedBooking = bookingRepositoryPort.save(booking);
+
+        // 4. Gửi Email kèm Link QR Code
         try {
-            // Lấy thông tin khách hàng để biết email
             GuestJpaEntity guest = guestRepo.findById(booking.getGuestId())
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin khách hàng"));
 
-            String emailSubject = "Xác nhận đặt phòng thành công - Mã: " + savedBooking.getBookingCode();
-            String emailBody = "Cảm ơn bạn đã đặt phòng...\n" + 
-                               "Mã đặt phòng: " + savedBooking.getBookingCode();
+            // --- TẠO LINK VIETQR ---
+            long amount = savedBooking.getTotalAmount().longValue();
+            String content = "Thanh toan " + savedBooking.getBookingCode();
+            
+            // Encode nội dung để tránh lỗi URL (ví dụ khoảng trắng thành %20)
+            String encodedContent = URLEncoder.encode(content, StandardCharsets.UTF_8);
+            String encodedName = URLEncoder.encode(ACCOUNT_NAME, StandardCharsets.UTF_8);
 
-            emailService.sendEmail(guest.getEmail(), emailSubject, emailBody);
+            String qrLink = String.format("https://img.vietqr.io/image/%s-%s-%s.png?amount=%d&addInfo=%s&accountName=%s",
+                    BANK_ID, ACCOUNT_NO, TEMPLATE, amount, encodedContent, encodedName);
+
+            // --- SOẠN EMAIL ---
+            String emailSubject = "Xác nhận đặt phòng & Thanh toán - Mã: " + savedBooking.getBookingCode();
+            
+            StringBuilder body = new StringBuilder();
+            body.append("Cảm ơn bạn đã đặt phòng tại Hotel Imperial!\n\n");
+            body.append("Mã đặt phòng: ").append(savedBooking.getBookingCode()).append("\n");
+            body.append("Tổng tiền: ").append(String.format("%,d", amount)).append(" VND\n\n");
+            body.append("VUI LÒNG THANH TOÁN ĐỂ CHÚNG TÔI HOÀN TẤT ĐƠN ĐẶT CỦA BẠN.\n");
+            body.append("Bạn có thể quét mã QR hoặc bấm vào link bên dưới để lấy mã thanh toán:\n");
+            body.append(qrLink).append("\n\n"); // Link bấm vào sẽ hiện ảnh QR
+            body.append("Ngân hàng: VietinBank\n");
+            body.append("Số tài khoản: 108878399150\n");
+            body.append("Chủ tài khoản: NGUYEN HA ANH\n");
+            body.append("Nội dung chuyển khoản: ").append(content).append("\n\n");
+            body.append("Vui lòng đưa mã đặt phòng cho lễ tân khi làm thủ tục nhận phòng.");
+
+            emailService.sendEmail(guest.getEmail(), emailSubject, body.toString());
 
         } catch (Exception e) {
-            // Log lỗi nhưng không chặn luồng (Vẫn cho đặt phòng thành công dù gửi mail lỗi)
             System.err.println("Lỗi gửi email đặt phòng: " + e.getMessage());
         }
 
@@ -160,5 +189,13 @@ public class BookingService implements BookingUseCase {
     public Booking getBookingByCode(String bookingCode) {
         return bookingRepositoryPort.findByBookingCode(bookingCode)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn đặt phòng với mã: " + bookingCode));
+    }
+    @Override
+    public Booking updateBookingStatus(Long id, String status) {
+        Booking booking = bookingRepositoryPort.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn đặt phòng!"));
+        
+        booking.setStatus(status); // Ví dụ: update từ CONFIRMED sang PAID
+        return bookingRepositoryPort.save(booking);
     }
 }
