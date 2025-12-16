@@ -1,12 +1,17 @@
 package com.hotel.application.service;
 
 import com.hotel.application.port.in.BookingUseCase;
+import com.hotel.application.port.in.InvoiceUseCase;
 import com.hotel.application.port.out.BookingRepositoryPort;
 import com.hotel.domain.model.Booking;
+import com.hotel.domain.model.Invoice;             
+import com.hotel.domain.model.InvoiceStatus;
 import org.springframework.stereotype.Service;
 import com.hotel.infrastructure.adapter.out.external.EmailService; // Import Service gửi mail
 import com.hotel.infrastructure.adapter.out.persistence.entity.GuestJpaEntity;
 import com.hotel.infrastructure.adapter.out.persistence.repository.SpringDataGuestRepository; // Import Repo Guest
+import org.springframework.transaction.annotation.Transactional;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -14,14 +19,17 @@ import java.util.UUID;
 public class BookingService implements BookingUseCase {
 
     private final BookingRepositoryPort bookingRepositoryPort;
-    private final EmailService emailService;              // 1. Thêm EmailService
+    private final EmailService emailService;             
     private final SpringDataGuestRepository guestRepo;
-    public BookingService(BookingRepositoryPort bookingRepositoryPort, EmailService emailService, SpringDataGuestRepository guestRepo) {
+    private final InvoiceUseCase invoiceUseCase;
+    public BookingService(BookingRepositoryPort bookingRepositoryPort, EmailService emailService, SpringDataGuestRepository guestRepo, InvoiceUseCase invoiceUseCase) {
         this.bookingRepositoryPort = bookingRepositoryPort;
         this.emailService = emailService;
         this.guestRepo = guestRepo;
+        this.invoiceUseCase = invoiceUseCase;
     }
-
+    @Override
+    @Transactional
     public Booking createBooking(Booking booking) {
         // Đảm bảo khách đã chọn loại phòng
         if (booking.getRoomType() == null || booking.getRoomType().isEmpty()) {
@@ -51,6 +59,17 @@ public class BookingService implements BookingUseCase {
         
         // Lưu booking
         Booking savedBooking = bookingRepositoryPort.save(booking);
+     // --- 6. LOGIC MỚI: TỰ ĐỘNG TẠO INVOICE (UNPAID) ---
+        // =================================================================
+        Invoice newInvoice = new Invoice();
+        newInvoice.setBookingId(savedBooking.getId());       // Liên kết với Booking vừa tạo
+        newInvoice.setTotalAmount(savedBooking.getTotalAmount().doubleValue()); // Lấy tổng tiền
+        newInvoice.setPaymentDate(null);                     // Chưa thanh toán nên ngày = null
+        newInvoice.setPaymentMethod(null);                   // Chưa chọn phương thức
+        newInvoice.setStatus(InvoiceStatus.UNPAID);          // Trạng thái mặc định
+        
+        // Gọi InvoiceService để lưu
+        invoiceUseCase.createInvoice(newInvoice);
         try {
             // Lấy thông tin khách hàng để biết email
             GuestJpaEntity guest = guestRepo.findById(booking.getGuestId())
