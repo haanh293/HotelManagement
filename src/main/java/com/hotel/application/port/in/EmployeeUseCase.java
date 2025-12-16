@@ -8,4 +8,5 @@ public interface EmployeeUseCase {
     List<Employee> getAllEmployees();
     void deleteEmployee(Long id);
     Employee getEmployeeByUserId(Long userId);
+    Employee updateEmployee(Long id, Employee employeeDetails);
 }

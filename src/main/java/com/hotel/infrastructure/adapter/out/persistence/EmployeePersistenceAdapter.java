@@ -6,6 +6,7 @@ import com.hotel.infrastructure.adapter.out.persistence.entity.EmployeeJpaEntity
 import com.hotel.infrastructure.adapter.out.persistence.repository.SpringDataEmployeeRepository;
 import org.springframework.stereotype.Component;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
@@ -48,6 +49,11 @@ public class EmployeePersistenceAdapter implements EmployeeRepositoryPort {
         return springDataEmployeeRepository.findByUserId(userId)
                 .map(this::mapToDomain)
                 .orElse(null);
+    }
+    @Override
+    public Optional<Employee> findById(Long id) {
+        return springDataEmployeeRepository.findById(id)
+                .map(this::mapToDomain);
     }
 
     private Employee mapToDomain(EmployeeJpaEntity entity) {

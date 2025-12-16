@@ -40,4 +40,14 @@ public class EmployeeController {
             return ResponseEntity.notFound().build();
         }
     }
+ // URL: PUT /api/employees/1
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateEmployee(@PathVariable Long id, @RequestBody Employee employeeDetails) {
+        try {
+            Employee updatedEmployee = employeeUseCase.updateEmployee(id, employeeDetails);
+            return ResponseEntity.ok(updatedEmployee);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }
