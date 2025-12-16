@@ -38,30 +38,4 @@ public class InvoiceService implements InvoiceUseCase {
     public List<Invoice> getAllInvoices() {
         return invoiceRepositoryPort.findAll();
     }
-
-    // --- Logic mới thêm vào ---
-    @Override
-    public Invoice updateInvoiceStatus(Long id, InvoiceStatus status) {
-        // 1. Tìm hóa đơn hiện tại
-        Invoice existingInvoice = invoiceRepositoryPort.findById(id)
-                .orElseThrow(() -> new RuntimeException("Invoice not found with id: " + id));
-        
-        // 2. Cập nhật trạng thái mới
-        existingInvoice.setStatus(status);
-        
-        // 3. Lưu lại xuống DB (Adapter sẽ xử lý việc update dựa trên ID)
-        return invoiceRepositoryPort.save(existingInvoice);
-    }
-    @Override
-    public void cancelInvoiceByBookingId(Long bookingId) {
-        // 1. Tìm hóa đơn dựa trên Booking ID
-        Invoice invoice = invoiceRepositoryPort.findByBookingId(bookingId)
-                .orElse(null); // Nếu không có thì thôi, không báo lỗi
-
-        // 2. Nếu tìm thấy thì đổi trạng thái sang CANCELLED
-        if (invoice != null) {
-            // Chỉ hủy nếu hóa đơn chưa thanh toán hoặc đang chờ
-            invoiceRepositoryPort.save(invoice);
-        }
-    }
 }

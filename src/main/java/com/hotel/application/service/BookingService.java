@@ -1,11 +1,8 @@
 package com.hotel.application.service;
 
 import com.hotel.application.port.in.BookingUseCase;
-import com.hotel.application.port.in.InvoiceUseCase;
 import com.hotel.application.port.out.BookingRepositoryPort;
 import com.hotel.domain.model.Booking;
-import com.hotel.domain.model.Invoice;             
-import com.hotel.domain.model.InvoiceStatus;
 import org.springframework.stereotype.Service;
 import com.hotel.infrastructure.adapter.out.external.EmailService; // Import Service gửi mail
 import com.hotel.infrastructure.adapter.out.persistence.entity.GuestJpaEntity;
@@ -23,12 +20,10 @@ public class BookingService implements BookingUseCase {
     private final BookingRepositoryPort bookingRepositoryPort;
     private final EmailService emailService;             
     private final SpringDataGuestRepository guestRepo;
-    private final InvoiceUseCase invoiceUseCase;
-    public BookingService(BookingRepositoryPort bookingRepositoryPort, EmailService emailService, SpringDataGuestRepository guestRepo, InvoiceUseCase invoiceUseCase) {
+    public BookingService(BookingRepositoryPort bookingRepositoryPort, EmailService emailService, SpringDataGuestRepository guestRepo) {
         this.bookingRepositoryPort = bookingRepositoryPort;
         this.emailService = emailService;
         this.guestRepo = guestRepo;
-        this.invoiceUseCase = invoiceUseCase;
     }
     @Override
     @Transactional
@@ -58,32 +53,15 @@ public class BookingService implements BookingUseCase {
         booking.setBookingCode(randomCode);
         
         booking.setStatus("CONFIRMED");
-        
-        // Lưu booking
         Booking savedBooking = bookingRepositoryPort.save(booking);
-     // --- 6. LOGIC MỚI: TỰ ĐỘNG TẠO INVOICE (UNPAID) ---
-        // =================================================================
-        Invoice newInvoice = new Invoice();
-        newInvoice.setBookingId(savedBooking.getId());       // Liên kết với Booking vừa tạo
-        newInvoice.setTotalAmount(savedBooking.getTotalAmount().doubleValue()); // Lấy tổng tiền
-        newInvoice.setPaymentDate(null);                     // Chưa thanh toán nên ngày = null
-        newInvoice.setPaymentMethod(null);                   // Chưa chọn phương thức
-        newInvoice.setStatus(InvoiceStatus.UNPAID);          // Trạng thái mặc định
-        
-        // Gọi InvoiceService để lưu
-        invoiceUseCase.createInvoice(newInvoice);
         try {
             // Lấy thông tin khách hàng để biết email
             GuestJpaEntity guest = guestRepo.findById(booking.getGuestId())
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin khách hàng"));
 
             String emailSubject = "Xác nhận đặt phòng thành công - Mã: " + savedBooking.getBookingCode();
-            String emailBody = "Cảm ơn bạn đã đặt phòng tại Hotel Imperial!\n\n" +
-                    "Mã đặt phòng của bạn: " + savedBooking.getBookingCode() + "\n" +
-                    "Ngày nhận phòng: " + savedBooking.getCheckInDate() + "\n" +
-                    "Ngày trả phòng: " + savedBooking.getCheckOutDate() + "\n" +
-                    "Tổng tiền: " + savedBooking.getTotalAmount() + "\n\n" +
-                    "Vui lòng đưa mã này cho lễ tân khi làm thủ tục nhận phòng.";
+            String emailBody = "Cảm ơn bạn đã đặt phòng...\n" + 
+                               "Mã đặt phòng: " + savedBooking.getBookingCode();
 
             emailService.sendEmail(guest.getEmail(), emailSubject, emailBody);
 
@@ -137,7 +115,6 @@ public class BookingService implements BookingUseCase {
         // 4. Cập nhật trạng thái Booking
         booking.setStatus("CANCELLED");
         bookingRepositoryPort.save(booking);
-        invoiceUseCase.cancelInvoiceByBookingId(id);
         // 5. Gửi Email thông báo
         try {
             GuestJpaEntity guest = guestRepo.findById(booking.getGuestId())
