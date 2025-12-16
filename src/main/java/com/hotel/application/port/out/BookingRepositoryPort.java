@@ -11,4 +11,5 @@ public interface BookingRepositoryPort {
     Optional<Booking> findById(Long id);
     List<Booking> findByGuestId(Long guestId);
     boolean isRoomAvailable(Long roomId, LocalDate checkIn, LocalDate checkOut);
+    Optional<Booking> findByBookingCode(String bookingCode);
 }

@@ -22,6 +22,7 @@ public interface SpringDataBookingRepository extends JpaRepository<BookingJpaEnt
                                                    @Param("checkOutDate") LocalDate checkOut);
 
     List<BookingJpaEntity> findByGuestId(Long guestId);
+    Optional<BookingJpaEntity> findByBookingCode(String bookingCode);
     
     @Query("SELECT b FROM BookingJpaEntity b WHERE b.roomId = :roomId AND b.status = 'CHECKED_IN'")
     Optional<BookingJpaEntity> findActiveBookingByRoom(@Param("roomId") Long roomId);

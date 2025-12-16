@@ -8,4 +8,5 @@ public interface BookingUseCase {
     List<Booking> getAllBookings();
     void cancelBooking(Long id);
     List<Booking> getBookingsByGuest(Long guestId);
+    Booking getBookingByCode(String bookingCode);
 }

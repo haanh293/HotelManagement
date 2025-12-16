@@ -93,4 +93,9 @@ public class BookingService implements BookingUseCase {
     public List<Booking> getBookingsByGuest(Long guestId) {
         return bookingRepositoryPort.findByGuestId(guestId);
     }
+    @Override
+    public Booking getBookingByCode(String bookingCode) {
+        return bookingRepositoryPort.findByBookingCode(bookingCode)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn đặt phòng với mã: " + bookingCode));
+    }
 }

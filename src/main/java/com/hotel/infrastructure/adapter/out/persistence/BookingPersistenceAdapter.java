@@ -78,6 +78,11 @@ public class BookingPersistenceAdapter implements BookingRepositoryPort {
     public void deleteById(Long id) {
         bookingRepo.deleteById(id);
     }
+    @Override
+    public Optional<Booking> findByBookingCode(String bookingCode) {
+        return bookingRepo.findByBookingCode(bookingCode)
+                .map(this::mapToDomain);
+    }
 
     // Hàm chuyển đổi
     private Booking mapToDomain(BookingJpaEntity entity) {

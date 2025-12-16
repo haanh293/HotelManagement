@@ -75,4 +75,14 @@ public class BookingController {
     public ResponseEntity<List<BookingServiceJpaEntity>> getServicesByBooking(@PathVariable Long bookingId) {
         return ResponseEntity.ok(bookingServiceRepo.findByBookingId(bookingId));
     }
+    // URL: GET /api/bookings/lookup/BK-8X92A
+    @GetMapping("/lookup/{bookingCode}")
+    public ResponseEntity<?> getBookingByCode(@PathVariable String bookingCode) {
+        try {
+            Booking booking = bookingUseCase.getBookingByCode(bookingCode);
+            return ResponseEntity.ok(booking);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }
